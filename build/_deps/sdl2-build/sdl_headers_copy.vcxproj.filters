@@ -1,0 +1,248 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_assert.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_atomic.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_audio.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_bits.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_blendmode.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_clipboard.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_copying.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_cpuinfo.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_egl.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_endian.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_error.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_events.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_filesystem.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_gamecontroller.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_gesture.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_guid.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_haptic.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_hidapi.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_hints.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_joystick.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_keyboard.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_keycode.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_loadso.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_locale.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_log.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_main.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_messagebox.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_metal.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_misc.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_mouse.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_mutex.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_name.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_opengl.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_opengl_glext.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_opengles.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_opengles2.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_opengles2_gl2.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_opengles2_gl2ext.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_opengles2_gl2platform.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_opengles2_khrplatform.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_pixels.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_platform.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_power.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_quit.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_rect.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_render.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_rwops.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_scancode.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_sensor.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_shape.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_stdinc.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_surface.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_system.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_syswm.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_test.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_test_assert.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_test_common.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_test_compare.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_test_crc32.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_test_font.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_test_fuzzer.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_test_harness.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_test_images.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_test_log.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_test_md5.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_test_memory.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_test_random.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_thread.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_timer.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_touch.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_types.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_version.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_video.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\SDL_vulkan.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\begin_code.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\87641d4ef379919ee94114c3fb28ef5c\close_code.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\CMakeFiles\e58f9e1a2c0aa872a64b97eb463f2800\sdl_headers_copy.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\repo\3d-renderer\build\_deps\sdl2-src\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="D:\repo\3d-renderer\build\_deps\sdl2-build\CMakeFiles\sdl_headers_copy" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{6B3E8F77-D58F-372C-B6EE-004C019E69E5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

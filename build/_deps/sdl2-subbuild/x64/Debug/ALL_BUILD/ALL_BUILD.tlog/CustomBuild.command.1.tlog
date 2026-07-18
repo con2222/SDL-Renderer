@@ -1,0 +1,10 @@
+^D:\REPO\3D-RENDERER\BUILD\_DEPS\SDL2-SUBBUILD\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/repo/3d-renderer/build/_deps/sdl2-subbuild -BD:/repo/3d-renderer/build/_deps/sdl2-subbuild --check-stamp-file D:/repo/3d-renderer/build/_deps/sdl2-subbuild/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

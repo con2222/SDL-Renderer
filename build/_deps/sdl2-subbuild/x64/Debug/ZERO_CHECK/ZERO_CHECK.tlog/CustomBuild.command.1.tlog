@@ -1,0 +1,10 @@
+^D:\REPO\3D-RENDERER\BUILD\_DEPS\SDL2-SUBBUILD\CMAKEFILES\0B33A792B31C670D42504FE887B53EB3\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/repo/3d-renderer/build/_deps/sdl2-subbuild -BD:/repo/3d-renderer/build/_deps/sdl2-subbuild --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file D:/repo/3d-renderer/build/_deps/sdl2-subbuild/sdl2-populate.slnx
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

@@ -157,6 +157,33 @@ namespace geom {
         result[2] = v1.x * v2.y - v1.y * v2.x;
         return result;
     }
+
+    // Rotation matrix
+
+    vec3 vec3_rotate_x(vec3& vec, float angle) {
+        return {
+            vec.x,
+            vec.y * cos(angle) - vec.z * sin(angle),
+            vec.y * sin(angle) + vec.z * cos(angle)
+        };
+    }
+
+    vec3 vec3_rotate_y(vec3& vec, float angle) {
+        return {
+            vec.x * cos(angle) - vec.z * sin(angle),
+            vec.y,
+            vec.x * sin(angle) + vec.z * cos(angle)
+        };
+    }
+
+    vec3 vec3_rotate_z(vec3& vec, float angle) {
+        return {
+            vec.x * cos(angle) - vec.y * sin(angle),
+            vec.x * sin(angle) + vec.y * cos(angle),
+            vec.z
+        };
+    }
+
     /* End Vector Implementation */
 
 

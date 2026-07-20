@@ -19,6 +19,8 @@ FetchContent_MakeAvailable(SDL2)
 set(SOURCES 
     src/main.cpp
     src/display.cpp
+    src/mesh.cpp
+    src/triangle.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

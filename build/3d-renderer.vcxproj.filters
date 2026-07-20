@@ -7,6 +7,12 @@
     <ClCompile Include="D:\repo\3d-renderer\src\display.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="D:\repo\3d-renderer\src\mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\repo\3d-renderer\src\triangle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="D:\repo\3d-renderer\CMakeLists.txt" />

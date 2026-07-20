@@ -63,8 +63,8 @@ void draw_pixel(EngineCore& engine_core, int x, int y, uint32_t color) {
 }
 
 void draw_rectangle(EngineCore& engine_core, int x, int y, int width, int height, uint32_t color) {
-    for (int y0 = y; y0 < height; y0++) {
-        for (int x0 = x; x0 < width; x0++) {
+    for (int y0 = y; y0 < y + height; y0++) {
+        for (int x0 = x; x0 < x + width; x0++) {
             draw_pixel(engine_core, x0, y0, color);
         }
     }

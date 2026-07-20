@@ -362,6 +362,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   <ItemGroup>
     <ClCompile Include="D:\repo\3d-renderer\src\main.cpp" />
     <ClCompile Include="D:\repo\3d-renderer\src\display.cpp" />
+    <ClCompile Include="D:\repo\3d-renderer\src\mesh.cpp" />
+    <ClCompile Include="D:\repo\3d-renderer\src\triangle.cpp" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

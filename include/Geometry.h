@@ -160,7 +160,7 @@ namespace geom {
 
     // Rotation matrix
 
-    vec3 vec3_rotate_x(vec3& vec, float angle) {
+    inline vec3 vec3_rotate_x(vec3& vec, float angle) {
         return {
             vec.x,
             vec.y * cos(angle) - vec.z * sin(angle),
@@ -168,7 +168,7 @@ namespace geom {
         };
     }
 
-    vec3 vec3_rotate_y(vec3& vec, float angle) {
+    inline vec3 vec3_rotate_y(vec3& vec, float angle) {
         return {
             vec.x * cos(angle) - vec.z * sin(angle),
             vec.y,
@@ -176,7 +176,7 @@ namespace geom {
         };
     }
 
-    vec3 vec3_rotate_z(vec3& vec, float angle) {
+    inline vec3 vec3_rotate_z(vec3& vec, float angle) {
         return {
             vec.x * cos(angle) - vec.y * sin(angle),
             vec.x * sin(angle) + vec.y * cos(angle),

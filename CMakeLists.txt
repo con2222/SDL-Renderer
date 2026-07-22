@@ -3,6 +3,11 @@ project(3d-renderer)
 
 include(FetchContent)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 set(SDL_TESTS OFF CACHE BOOL "Disable SDL tests" FORCE)
 set(SDL_SHARED OFF CACHE BOOL "Build static SDL library instead of shared" FORCE)
 set(SDL_STATIC ON CACHE BOOL "Build static SDL" FORCE)

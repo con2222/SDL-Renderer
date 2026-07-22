@@ -1,6 +1,6 @@
 #include "display.h"
-#include "Geometry.h"
 #include "mesh.h"
+#include "color.h"
 
 #include <cstdint>
 
@@ -18,7 +18,31 @@ geom::vec3 cube_rotation { 0.f, 0.f, 0.f };
 
 Triangle triangles_to_render[N_MESH_FACES];
 
+// DDA
+void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1, uint32_t color) {
+    int delta_x = x1 - x0;
+    int delta_y = y1 - y0;
 
+    int side_length = abs(delta_x) > abs(delta_y) ? abs(delta_x) : abs(delta_y);
+
+    float x_inc = delta_x / static_cast<float>(side_length);
+    float y_inc = delta_y / static_cast<float>(side_length);
+
+    float current_x = x0;
+    float current_y = y0;
+
+    for (int i = 0; i <= side_length; i++) {
+        draw_pixel(engine_core, geom::round_float_to_int(current_x), geom::round_float_to_int(current_y), color);
+        current_x += x_inc;
+        current_y += y_inc;
+    }
+}
+
+void draw_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
+    draw_line_DDA(engine_core, x0, y0, x1, y1, color);
+    draw_line_DDA(engine_core, x1, y1, x2, y2, color);
+    draw_line_DDA(engine_core, x2, y2, x0, y0, color);
+}
 
 void process_input(bool& is_running) {
     SDL_Event event;
@@ -84,9 +108,17 @@ void render(EngineCore& engine_core) {
         draw_rectangle(engine_core, triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFFFFFF00);
         draw_rectangle(engine_core, triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFFFFFF00);
         draw_rectangle(engine_core, triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFFFFFF00);
+        
+
+        draw_triangle(engine_core,
+            triangle.points[0].x, triangle.points[0].y,
+            triangle.points[1].x, triangle.points[1].y,
+            triangle.points[2].x, triangle.points[2].y,
+            C2::Color::Cyan
+        );
     }
 
-    
+
     render_color_buffer(engine_core);
     clear_color_buffer(engine_core, 0xFF000000); 
     SDL_RenderPresent(engine_core.renderer);

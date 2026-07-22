@@ -325,4 +325,33 @@ namespace geom {
         return result;
     }
     /* End Matrix Implementation */
+
+    /* Utility func */
+    inline int round_float_to_int(float x) {
+        if (x >= 0.0f) {
+            return (int)(x + 0.5f);
+        } 
+        else {
+            return (int)(x - 0.5f);
+        }
+    }
+
+    inline float abs(float x) {
+        uint32_t bits;
+        std::memcpy(&bits, &x, 4); // copy 4 bytes
+        bits = bits & 0x7FFFFFFF;
+        float result;
+        std::memcpy(&result, &bits, 4);
+        return result;
+    }
+
+    inline int abs(int x) {
+        int mask = x >> 31;
+        return (x ^ mask) - mask;
+    }
+
+    template<typename T>
+    inline T abs(T x) {
+        return x >= 0 ? x : -x;
+    }
 }

@@ -1,7 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"D:/repo/3d-renderer/build/_deps/sdl2-subbuild/cmake_install.cmake"
-	],
-	"Parallel" : false
-}

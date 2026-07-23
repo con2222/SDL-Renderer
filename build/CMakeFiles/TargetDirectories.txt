@@ -1,9 +1,0 @@
-D:/repo/3d-renderer/build/CMakeFiles/3d-renderer.dir
-D:/repo/3d-renderer/build/CMakeFiles/ALL_BUILD.dir
-D:/repo/3d-renderer/build/CMakeFiles/ZERO_CHECK.dir
-D:/repo/3d-renderer/build/_deps/sdl2-build/CMakeFiles/sdl_headers_copy.dir
-D:/repo/3d-renderer/build/_deps/sdl2-build/CMakeFiles/SDL2main.dir
-D:/repo/3d-renderer/build/_deps/sdl2-build/CMakeFiles/SDL2-static.dir
-D:/repo/3d-renderer/build/_deps/sdl2-build/CMakeFiles/SDL2_test.dir
-D:/repo/3d-renderer/build/_deps/sdl2-build/CMakeFiles/uninstall.dir
-D:/repo/3d-renderer/build/_deps/sdl2-build/CMakeFiles/ALL_BUILD.dir

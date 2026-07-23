@@ -3,6 +3,7 @@
 #include "color.h"
 
 #include <cstdint>
+#include <vector>
 
 
 using namespace C2Renderer;
@@ -16,7 +17,9 @@ const float fov_factor = 128;
 geom::vec3 camera_position { 0, 0, -2.f };
 geom::vec3 cube_rotation { 0.f, 0.f, 0.f };
 
-Triangle triangles_to_render[N_MESH_FACES];
+
+// TODO: Do more dynamic
+std::vector<Triangle> triangles_to_render(N_MESH_FACES);
 
 // DDA
 void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1, uint32_t color) {
@@ -103,7 +106,10 @@ void update(EngineCore& engine_core) {
 }
 
 void render(EngineCore& engine_core) {
-    for (int i = 0; i < N_MESH_FACES; i++) {
+
+    size_t triangles_count = triangles_to_render.size();
+
+    for (int i = 0; i < triangles_count; i++) {
         Triangle triangle = triangles_to_render[i];
         draw_rectangle(engine_core, triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFFFFFF00);
         draw_rectangle(engine_core, triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFFFFFF00);

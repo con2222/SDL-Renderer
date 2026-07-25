@@ -3,6 +3,8 @@
 #include <cmath>
 #include <cassert>
 #include <iostream>
+#include <cstring>
+#include <cstdint>
 
 namespace geom {
     /* Vector Implementation */

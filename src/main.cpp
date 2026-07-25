@@ -15,11 +15,10 @@ const double FRAME_TARGET_TIME = 1000 / FPS;
 uint64_t previous_frame_time = 0;
 const float fov_factor = 128;
 geom::vec3 camera_position { 0, 0, -2.f };
-geom::vec3 cube_rotation { 0.f, 0.f, 0.f };
 
 
 // TODO: Do more dynamic
-std::vector<Triangle> triangles_to_render(N_MESH_FACES);
+std::vector<Triangle> triangles_to_render(N_CUBE_FACES);
 
 // DDA
 void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1, uint32_t color) {
@@ -73,24 +72,27 @@ void update(EngineCore& engine_core) {
     previous_frame_time = SDL_GetTicks64();
 
 
-    cube_rotation.y += 0.01;
-    cube_rotation.x += 0.01;
-    cube_rotation.z += 0.01;
+    mesh.rotation.y += 0.01;
+    mesh.rotation.x += 0.01;
+    mesh.rotation.z += 0.01;
 
-    for (size_t i = 0; i < N_MESH_FACES; i++) {
-        Face mesh_face = mesh_faces[i];
+    size_t num_faces = mesh.faces.size();
+    size_t num_vertices = mesh.vertices.size();
+
+    for (size_t i = 0; i < num_faces; i++) {
+        Face mesh_face = mesh.faces[i];
 
         geom::vec3 face_vertices[3];
-        face_vertices[0] = mesh_vertices[mesh_face.a - 1];
-        face_vertices[1] = mesh_vertices[mesh_face.b - 1];
-        face_vertices[2] = mesh_vertices[mesh_face.c - 1];
+        face_vertices[0] = mesh.vertices[mesh_face.a - 1];
+        face_vertices[1] = mesh.vertices[mesh_face.b - 1];
+        face_vertices[2] = mesh.vertices[mesh_face.c - 1];
 
         Triangle projected_triangle;
 
         for (size_t j = 0; j < 3; j++) {
-            geom::vec3 transformed_vertex = geom::vec3_rotate_x(face_vertices[j], cube_rotation.x);
-            transformed_vertex = geom::vec3_rotate_z(transformed_vertex, cube_rotation.z);
-            transformed_vertex = geom::vec3_rotate_y(transformed_vertex, cube_rotation.y);
+            geom::vec3 transformed_vertex = geom::vec3_rotate_x(face_vertices[j], mesh.rotation.x);
+            transformed_vertex = geom::vec3_rotate_z(transformed_vertex, mesh.rotation.z);
+            transformed_vertex = geom::vec3_rotate_y(transformed_vertex, mesh.rotation.y);
 
             transformed_vertex.z -= camera_position.z;
 
@@ -101,7 +103,7 @@ void update(EngineCore& engine_core) {
 
             projected_triangle.points[j] = project_point;
         }
-        triangles_to_render[i] = projected_triangle;
+        triangles_to_render[i] = projected_triangle; 
     }
 }
 
@@ -134,6 +136,8 @@ void setup(EngineCore& engine_core) {
     engine_core.color_buffer = new uint32_t[engine_core.window.window_width * engine_core.window.window_height]; 
     engine_core.color_buffer_texture = SDL_CreateTexture(engine_core.renderer, SDL_PIXELFORMAT_ARGB8888, 
         SDL_TEXTUREACCESS_STREAMING, engine_core.window.window_width, engine_core.window.window_height);
+
+    load_cube_mesh_data();
 }
 
 geom::vec2 project(EngineCore& engine_core, geom::vec3 point) {

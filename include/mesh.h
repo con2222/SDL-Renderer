@@ -1,16 +1,26 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include "mesh.h"
 #include "triangle.h"
 #include "Geometry.h"
 
+#include <vector>
 
-#define N_MESH_VERTICES 8
-extern geom::vec3 mesh_vertices[N_MESH_VERTICES];
 
-#define N_MESH_FACES (6 * 2) // 6 cube faces, 2 triangles per face
-extern Face mesh_faces[N_MESH_FACES];
+const int N_CUBE_VERTICES = 8;
+const int N_CUBE_FACES = 12;
 
+extern geom::vec3 cube_vertices[N_CUBE_VERTICES];
+extern Face cube_faces[N_CUBE_FACES];
+
+struct Mesh {
+    std::vector<geom::vec3> vertices; // dynamic array of vertices
+    std::vector<Face> faces; // dynamic array of faces
+    geom::vec3 rotation; // rotation with x, y, and z values
+};
+
+extern Mesh mesh;
+
+void load_cube_mesh_data();
 
 #endif

@@ -1,24 +1,24 @@
 #include "display.h"
 #include "mesh.h"
 #include "color.h"
+#include "triangle.h"
 
 #include <cstdint>
 #include <vector>
 
+const char* OBJ_FILENAME = "assets/cat.obj"; 
 
 using namespace C2Renderer;
 
 geom::vec2 project(EngineCore& engine_core, geom::vec3 point);
 
 const int FPS = 240;
-const double FRAME_TARGET_TIME = 1000 / FPS;
+const double FRAME_TARGET_TIME = 1000.0 / FPS;
 uint64_t previous_frame_time = 0;
 const float fov_factor = 128;
 geom::vec3 camera_position { 0, 0, -2.f };
 
-
-// TODO: Do more dynamic
-std::vector<Triangle> triangles_to_render(N_CUBE_FACES);
+std::vector<Triangle> triangles_to_render;
 
 // DDA
 void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1, uint32_t color) {
@@ -65,6 +65,8 @@ void process_input(bool& is_running) {
 }
 
 void update(EngineCore& engine_core) {
+    triangles_to_render.clear();
+
     uint64_t time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks64() - previous_frame_time);
     if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME) {
         SDL_Delay(time_to_wait);
@@ -83,9 +85,9 @@ void update(EngineCore& engine_core) {
         Face mesh_face = mesh.faces[i];
 
         geom::vec3 face_vertices[3];
-        face_vertices[0] = mesh.vertices[mesh_face.a - 1];
-        face_vertices[1] = mesh.vertices[mesh_face.b - 1];
-        face_vertices[2] = mesh.vertices[mesh_face.c - 1];
+        face_vertices[0] = mesh.vertices[mesh_face.a];
+        face_vertices[1] = mesh.vertices[mesh_face.b];
+        face_vertices[2] = mesh.vertices[mesh_face.c];
 
         Triangle projected_triangle;
 
@@ -98,12 +100,12 @@ void update(EngineCore& engine_core) {
 
             geom::vec2 project_point = project(engine_core, transformed_vertex);
 
-            project_point.x += engine_core.window.window_width / 2;
-            project_point.y += engine_core.window.window_height / 2;
+            project_point.x += engine_core.window.window_width / 2.0f;
+            project_point.y += engine_core.window.window_height / 2.0f;
 
             projected_triangle.points[j] = project_point;
         }
-        triangles_to_render[i] = projected_triangle; 
+        triangles_to_render.push_back(projected_triangle); 
     }
 }
 
@@ -137,7 +139,9 @@ void setup(EngineCore& engine_core) {
     engine_core.color_buffer_texture = SDL_CreateTexture(engine_core.renderer, SDL_PIXELFORMAT_ARGB8888, 
         SDL_TEXTUREACCESS_STREAMING, engine_core.window.window_width, engine_core.window.window_height);
 
-    load_cube_mesh_data();
+    // load_cube_mesh_data();
+    load_obj_file_data(OBJ_FILENAME);
+    std::cout << "Vertices:" << mesh.vertices.size() << " " << "Faces:" << mesh.faces.size() << std::endl;
 }
 
 geom::vec2 project(EngineCore& engine_core, geom::vec3 point) {

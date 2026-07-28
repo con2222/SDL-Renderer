@@ -1,3 +1,4 @@
+#include "Geometry.h"
 #include "display.h"
 #include "mesh.h"
 #include "color.h"
@@ -6,7 +7,7 @@
 #include <cstdint>
 #include <vector>
 
-const char* OBJ_FILENAME = "assets/cat.obj"; 
+const char* OBJ_FILENAME = "assets/cube.obj"; 
 
 using namespace C2Renderer;
 
@@ -16,7 +17,7 @@ const int FPS = 240;
 const double FRAME_TARGET_TIME = 1000.0 / FPS;
 uint64_t previous_frame_time = 0;
 const float fov_factor = 128;
-geom::vec3 camera_position { 0, 0, -2.f };
+geom::vec3 camera_position { 0, 0, 0 };
 
 std::vector<Triangle> triangles_to_render;
 
@@ -74,9 +75,9 @@ void update(EngineCore& engine_core) {
     previous_frame_time = SDL_GetTicks64();
 
 
-    mesh.rotation.y += 0.01;
     mesh.rotation.x += 0.01;
-    mesh.rotation.z += 0.01;
+    mesh.rotation.y += 0.00;
+    mesh.rotation.z += 0.00;
 
     size_t num_faces = mesh.faces.size();
     size_t num_vertices = mesh.vertices.size();
@@ -91,14 +92,36 @@ void update(EngineCore& engine_core) {
 
         Triangle projected_triangle;
 
+        geom::vec3 transformed_vertices[3];
+
+        // Apply transformations
         for (size_t j = 0; j < 3; j++) {
             geom::vec3 transformed_vertex = geom::vec3_rotate_x(face_vertices[j], mesh.rotation.x);
             transformed_vertex = geom::vec3_rotate_z(transformed_vertex, mesh.rotation.z);
             transformed_vertex = geom::vec3_rotate_y(transformed_vertex, mesh.rotation.y);
 
-            transformed_vertex.z -= camera_position.z;
+            transformed_vertex.z += 2.;
+        
+            transformed_vertices[j] =  transformed_vertex;
+        }
 
-            geom::vec2 project_point = project(engine_core, transformed_vertex);
+        // Clockwise
+        geom::vec3 vector_a = transformed_vertices[0]; /*   A   */
+        geom::vec3 vector_b = transformed_vertices[1]; /*  / \  */
+        geom::vec3 vector_c = transformed_vertices[2]; /* C---B */
+
+        geom::vec3 vector_ab = vector_b - vector_a;
+        geom::vec3 vector_ac = vector_c - vector_a;
+        geom::vec3 normal = geom::cross(vector_ab, vector_ac); // left handed coordinate system
+        geom::vec3 camera_ray = camera_position - vector_a;
+        int product = geom::dot(normal, camera_ray);
+        if (product < 0) {
+            continue;
+        }
+
+        // Loop all three vertices to perform projection
+        for (size_t j = 0; j < 3; j++) {
+            geom::vec2 project_point = project(engine_core, transformed_vertices[j]);
 
             project_point.x += engine_core.window.window_width / 2.0f;
             project_point.y += engine_core.window.window_height / 2.0f;

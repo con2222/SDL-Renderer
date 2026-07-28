@@ -76,8 +76,8 @@ void update(EngineCore& engine_core) {
 
 
     mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.00;
-    mesh.rotation.z += 0.00;
+    mesh.rotation.y += 0.01;
+    mesh.rotation.z += 0.01;
 
     size_t num_faces = mesh.faces.size();
     size_t num_vertices = mesh.vertices.size();
@@ -114,8 +114,8 @@ void update(EngineCore& engine_core) {
         geom::vec3 vector_ac = vector_c - vector_a;
         geom::vec3 normal = geom::cross(vector_ab, vector_ac); // left handed coordinate system
         geom::vec3 camera_ray = camera_position - vector_a;
-        int product = geom::dot(normal, camera_ray);
-        if (product < 0) {
+        float product = geom::dot(normal, camera_ray);
+        if (product < 0.0f) {
             continue;
         }
 

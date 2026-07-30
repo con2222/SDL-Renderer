@@ -1,3 +1,4 @@
+#include "Configurations.hpp"
 #include "Geometry.h"
 #include "display.h"
 #include "mesh.h"
@@ -8,9 +9,12 @@
 #include <vector>
 #include <utility>
 
-const char* OBJ_FILENAME = "assets/cube.obj"; 
 
 using namespace C2Renderer;
+
+const char* OBJ_FILENAME = "assets/cube.obj"; 
+C2Renderer::RenderMethod render_method;
+C2Renderer::CullMethod cull_method;
 
 geom::vec2 project(EngineCore& engine_core, geom::vec3 point);
 
@@ -57,8 +61,6 @@ void fill_flat_top_triangle(EngineCore& engine_core, int x1, int y1, int Mx, int
     }
 }
 
-
-
 // DDA
 void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1, uint32_t color) {
     int delta_x = x1 - x0;
@@ -84,7 +86,6 @@ void draw_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int 
     draw_line_DDA(engine_core, x1, y1, x2, y2, color);
     draw_line_DDA(engine_core, x2, y2, x0, y0, color);
 
-    draw_filled_triangle(engine_core, x0, y0, x1, y1, x2, y2, color);
 }
 
 void draw_filled_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
@@ -126,6 +127,24 @@ void process_input(bool& is_running) {
         case SDL_KEYDOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE) {
                 is_running = false;
+            }
+            if (event.key.keysym.sym == SDLK_1) {
+                render_method = RenderMethod::RENDER_WIRE_VERTEX;
+            }
+            if (event.key.keysym.sym == SDLK_2) {
+                render_method = RenderMethod::RENDER_WIRE;
+            }
+            if (event.key.keysym.sym == SDLK_3) {
+                render_method = RenderMethod::RENDER_FILL_TRIANGLE;
+            }
+            if (event.key.keysym.sym == SDLK_4) {
+                render_method = RenderMethod::RENDER_FILL_TRIANGLE_WIRE;
+            }
+            if (event.key.keysym.sym == SDLK_c) {
+                cull_method = CullMethod::CULL_BACKFACE;
+            }
+            if (event.key.keysym.sym == SDLK_d) {
+                cull_method = CullMethod::CULL_NONE;
             }
             break;
         default:
@@ -173,18 +192,21 @@ void update(EngineCore& engine_core) {
             transformed_vertices[j] =  transformed_vertex;
         }
 
-        // Clockwise
-        geom::vec3 vector_a = transformed_vertices[0]; /*   A   */
-        geom::vec3 vector_b = transformed_vertices[1]; /*  / \  */
-        geom::vec3 vector_c = transformed_vertices[2]; /* C---B */
+        if (cull_method == CullMethod::CULL_BACKFACE) {
 
-        geom::vec3 vector_ab = vector_b - vector_a;
-        geom::vec3 vector_ac = vector_c - vector_a;
-        geom::vec3 normal = geom::cross(vector_ab, vector_ac); // left handed coordinate system
-        geom::vec3 camera_ray = camera_position - vector_a;
-        float product = geom::dot(normal, camera_ray);
-        if (product < 0.0f) {
-            continue;
+            // Clockwise
+            geom::vec3 vector_a = transformed_vertices[0]; /*   A   */
+            geom::vec3 vector_b = transformed_vertices[1]; /*  / \  */
+            geom::vec3 vector_c = transformed_vertices[2]; /* C---B */
+
+            geom::vec3 vector_ab = vector_b - vector_a;
+            geom::vec3 vector_ac = vector_c - vector_a;
+            geom::vec3 normal = geom::cross(vector_ab, vector_ac); // left handed coordinate system
+            geom::vec3 camera_ray = camera_position - vector_a;
+            float product = geom::dot(normal, camera_ray);
+            if (product < 0.0f) {
+                continue;
+            }
         }
 
         // Loop all three vertices to perform projection
@@ -204,23 +226,35 @@ void render(EngineCore& engine_core) {
 
     size_t triangles_count = triangles_to_render.size();
 
-    /*
+    
     for (int i = 0; i < triangles_count; i++) {
         Triangle triangle = triangles_to_render[i];
-        draw_rectangle(engine_core, triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFFFFFF00);
-        draw_rectangle(engine_core, triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFFFFFF00);
-        draw_rectangle(engine_core, triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFFFFFF00);
+
+        if (render_method == RenderMethod::RENDER_FILL_TRIANGLE || render_method == RenderMethod::RENDER_FILL_TRIANGLE_WIRE) {
+            draw_filled_triangle(engine_core,
+                triangle.points[0].x, triangle.points[0].y,
+                triangle.points[1].x, triangle.points[1].y,
+                triangle.points[2].x, triangle.points[2].y,
+                C2::Color::LightGray
+            );
+        }
         
+        if (render_method == RenderMethod::RENDER_WIRE || render_method == RenderMethod::RENDER_WIRE_VERTEX || render_method == RenderMethod::RENDER_FILL_TRIANGLE_WIRE) {
+            draw_triangle(engine_core,
+                triangle.points[0].x, triangle.points[0].y,
+                triangle.points[1].x, triangle.points[1].y,
+                triangle.points[2].x, triangle.points[2].y,
+                C2::Color::Gold
+            );
+        }
 
-        draw_triangle(engine_core,
-            triangle.points[0].x, triangle.points[0].y,
-            triangle.points[1].x, triangle.points[1].y,
-            triangle.points[2].x, triangle.points[2].y,
-            C2::Color::Cyan
-        );
-    }*/
-
-    draw_triangle(engine_core, 300, 100, 50, 400, 500, 700, 0xFF00FF00);
+        if (render_method == C2Renderer::RenderMethod::RENDER_WIRE_VERTEX) {
+            draw_rectangle(engine_core, triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6 , C2::Color::Red);
+            draw_rectangle(engine_core, triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, C2::Color::Red);
+            draw_rectangle(engine_core, triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, C2::Color::Red); 
+        }
+    }
+    
 
     render_color_buffer(engine_core);
     clear_color_buffer(engine_core, 0xFF000000); 
@@ -228,6 +262,9 @@ void render(EngineCore& engine_core) {
 }
 
 void setup(EngineCore& engine_core) {
+    cull_method = CullMethod::CULL_NONE;
+    render_method = RenderMethod::RENDER_WIRE;
+    
     engine_core.color_buffer = new uint32_t[engine_core.window.window_width * engine_core.window.window_height]; 
     engine_core.color_buffer_texture = SDL_CreateTexture(engine_core.renderer, SDL_PIXELFORMAT_ARGB8888, 
         SDL_TEXTUREACCESS_STREAMING, engine_core.window.window_width, engine_core.window.window_height);

@@ -13,4 +13,5 @@ struct Triangle {
     geom::vec2 points[3];
 };
 
+
 #endif

@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <utility>
 
 const char* OBJ_FILENAME = "assets/cube.obj"; 
 
@@ -20,6 +21,43 @@ const float fov_factor = 128;
 geom::vec3 camera_position { 0, 0, 0 };
 
 std::vector<Triangle> triangles_to_render;
+
+void draw_filled_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
+void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1, uint32_t color);
+void fill_flat_bottom_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int Mx, int My, uint32_t color);
+void fill_flat_top_triangle(EngineCore& engine_core, int x1, int y1, int Mx, int My, int x2, int y2, uint32_t color);
+
+
+void fill_flat_bottom_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int Mx, int My, uint32_t color) {
+
+    float inv_slope1 = static_cast<float>((x1 - x0)) / (y1 - y0);
+    float inv_slope2 = static_cast<float>((Mx - x0)) / (My - y0);
+
+    float current_x1 = x0;
+    float current_x2 = x0;
+
+    for (int y = y0; y <= y1; y++) {
+        draw_line_DDA(engine_core, geom::round_float_to_int(current_x1), y, geom::round_float_to_int(current_x2), y, color);
+        current_x1 += inv_slope1;
+        current_x2 += inv_slope2;
+    }
+}
+
+void fill_flat_top_triangle(EngineCore& engine_core, int x1, int y1, int Mx, int My, int x2, int y2, uint32_t color) {
+    float inv_slope1 = static_cast<float>((x2 - x1)) / (y2 - y1);
+    float inv_slope2 = static_cast<float>((x2 - Mx)) / (y2 - My);
+
+    float current_x1 = x1;
+    float current_x2 = Mx;
+
+    for (int y = y1; y <= y2; y++) {
+        draw_line_DDA(engine_core, geom::round_float_to_int(current_x1), y, geom::round_float_to_int(current_x2), y, color);
+        current_x1 += inv_slope1;
+        current_x2 += inv_slope2;
+    }
+}
+
+
 
 // DDA
 void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1, uint32_t color) {
@@ -45,6 +83,36 @@ void draw_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int 
     draw_line_DDA(engine_core, x0, y0, x1, y1, color);
     draw_line_DDA(engine_core, x1, y1, x2, y2, color);
     draw_line_DDA(engine_core, x2, y2, x0, y0, color);
+
+    draw_filled_triangle(engine_core, x0, y0, x1, y1, x2, y2, color);
+}
+
+void draw_filled_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
+    if (y0 > y1) {
+        std::swap(y0, y1);
+        std::swap(x0, x1);
+    }
+    if (y1 > y2) {
+        std::swap(y1, y2);
+        std::swap(x1, x2);
+    }
+    if (y0 > y1) {
+        std::swap(y0, y1);
+        std::swap(x0, x1);
+    }
+
+    if (y2 == y0) return;
+
+    int My = y1;
+    int Mx = ((x2 - x0) * (y1 - y0) / static_cast<float>((y2 - y0))) + x0;
+
+    if (y1 > y0) {
+        fill_flat_bottom_triangle(engine_core, x0, y0, x1, y1, Mx, My, color);
+    }
+
+    if (y2 > y1) {
+        fill_flat_top_triangle(engine_core, x1, y1, Mx, My, x2, y2, color);
+    }
 }
 
 void process_input(bool& is_running) {
@@ -136,6 +204,7 @@ void render(EngineCore& engine_core) {
 
     size_t triangles_count = triangles_to_render.size();
 
+    /*
     for (int i = 0; i < triangles_count; i++) {
         Triangle triangle = triangles_to_render[i];
         draw_rectangle(engine_core, triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFFFFFF00);
@@ -149,8 +218,9 @@ void render(EngineCore& engine_core) {
             triangle.points[2].x, triangle.points[2].y,
             C2::Color::Cyan
         );
-    }
+    }*/
 
+    draw_triangle(engine_core, 300, 100, 50, 400, 500, 700, 0xFF00FF00);
 
     render_color_buffer(engine_core);
     clear_color_buffer(engine_core, 0xFF000000); 

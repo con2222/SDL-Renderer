@@ -1,4 +1,4 @@
-#include "Configurations.hpp"
+#include "Configurations.h"
 #include "Geometry.h"
 #include "display.h"
 #include "mesh.h"
@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <vector>
 #include <utility>
+#include <algorithm>
 
 
 using namespace C2Renderer;
@@ -177,8 +178,6 @@ void update(EngineCore& engine_core) {
         face_vertices[1] = mesh.vertices[mesh_face.b];
         face_vertices[2] = mesh.vertices[mesh_face.c];
 
-        Triangle projected_triangle;
-
         geom::vec3 transformed_vertices[3];
 
         // Apply transformations
@@ -206,20 +205,36 @@ void update(EngineCore& engine_core) {
             float product = geom::dot(normal, camera_ray);
             if (product < 0.0f) {
                 continue;
-            }
+                }
         }
+
+        geom::vec2 projected_points[3];
 
         // Loop all three vertices to perform projection
         for (size_t j = 0; j < 3; j++) {
-            geom::vec2 project_point = project(engine_core, transformed_vertices[j]);
+            projected_points[j] = project(engine_core, transformed_vertices[j]);
 
-            project_point.x += engine_core.window.window_width / 2.0f;
-            project_point.y += engine_core.window.window_height / 2.0f;
-
-            projected_triangle.points[j] = project_point;
+            projected_points[j].x += engine_core.window.window_width / 2.0f;
+            projected_points[j].y += engine_core.window.window_height / 2.0f;
         }
+
+        float avg_depth = (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z) / 3.f;
+
+        Triangle projected_triangle;
+        projected_triangle.points[0] = { projected_points[0].x, projected_points[0].y };
+        projected_triangle.points[1] = { projected_points[1].x, projected_points[1].y };
+        projected_triangle.points[2] = { projected_points[2].x, projected_points[2].y };
+        projected_triangle.color = mesh_face.color;
+        projected_triangle.avg_depth = avg_depth;
+        
         triangles_to_render.push_back(projected_triangle); 
     }
+    
+    std::sort(triangles_to_render.begin(), triangles_to_render.end(), 
+    [](Triangle a, Triangle b){
+            return a.avg_depth > b.avg_depth;
+            }
+    );
 }
 
 void render(EngineCore& engine_core) {
@@ -235,7 +250,7 @@ void render(EngineCore& engine_core) {
                 triangle.points[0].x, triangle.points[0].y,
                 triangle.points[1].x, triangle.points[1].y,
                 triangle.points[2].x, triangle.points[2].y,
-                C2::Color::LightGray
+                triangle.color
             );
         }
         
@@ -269,8 +284,9 @@ void setup(EngineCore& engine_core) {
     engine_core.color_buffer_texture = SDL_CreateTexture(engine_core.renderer, SDL_PIXELFORMAT_ARGB8888, 
         SDL_TEXTUREACCESS_STREAMING, engine_core.window.window_width, engine_core.window.window_height);
 
-    // load_cube_mesh_data();
-    load_obj_file_data(OBJ_FILENAME);
+    load_cube_mesh_data();
+
+    // load_obj_file_data(OBJ_FILENAME);
     std::cout << "Vertices:" << mesh.vertices.size() << " " << "Faces:" << mesh.faces.size() << std::endl;
 }
 

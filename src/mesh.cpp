@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <color.h>
 
 // TODO: Create implementation for mesh.h functions
 
@@ -22,23 +23,23 @@ geom::vec3 cube_vertices[N_CUBE_VERTICES] = {
 
 Face cube_faces[N_CUBE_FACES] = {
     // front
-    {1, 2, 3},
-    {1, 3, 4},
+    {1, 2, 3, C2::Color::Red},
+    {1, 3, 4, C2::Color::Gold},
     // right
-    {4, 3, 5},
-    {4, 5, 6},
+    {4, 3, 5, C2::Color::RoyalBlue},
+    {4, 5, 6, C2::Color::Silver},
     // back
-    {6, 5, 7},
-    {6, 7, 8},
+    {6, 5, 7, C2::Color::Blue},
+    {6, 7, 8, C2::Color::DeepPink},
     // left
-    {8, 7, 2},
-    {8, 2, 1},
+    {8, 7, 2, C2::Color::Maroon},
+    {8, 2, 1, C2::Color::Brown},
     // top
-    {2, 7, 5},
-    {2, 5, 3},
+    {2, 7, 5, C2::Color::ForestGreen},
+    {2, 5, 3, C2::Color::Pink},
     // bottom
-    {6, 8, 1},
-    {6, 1, 4}
+    {6, 8, 1, C2::Color::Olive},
+    {6, 1, 4, C2::Color::Navy}
 };
 
 void load_cube_mesh_data() {
@@ -47,7 +48,11 @@ void load_cube_mesh_data() {
     }
 
     for (int i = 0; i < N_CUBE_FACES; i++) {
-        mesh.faces.push_back(cube_faces[i]);
+        Face f = cube_faces[i];
+        f.a -= 1;
+        f.b -= 1;
+        f.c -= 1;
+        mesh.faces.push_back(f);
     }
 }
 

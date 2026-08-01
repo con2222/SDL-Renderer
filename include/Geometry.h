@@ -345,6 +345,16 @@ namespace geom {
         return m;
     }
 
+    inline mat4 mat4_make_translation(float tx, float ty, float tz) {
+        mat4 m = mat4::identity();
+
+        m[0][3] = tx;
+        m[1][3] = ty;
+        m[2][3] = tz;
+
+        return m;
+    }
+
     /* End Matrix Implementation */
 
     /* Utility func */

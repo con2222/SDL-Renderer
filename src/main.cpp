@@ -167,10 +167,16 @@ void update(EngineCore& engine_core) {
     mesh.rotation.y += 0.01;
     mesh.rotation.z += 0.01;
 
-    mesh.scale.x += 0.02;
-    mesh.scale.y += 0.02;
+    //mesh.scale.x += 0.001;
+    //mesh.scale.y += 0.001;
+
+    mesh.translation.x += 0.01;
+    mesh.translation.z = 2.0;
+
 
     geom::mat4 scale_matrix = geom::mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+    geom::mat4 translation_matrix = geom::mat4_make_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
+
 
     size_t num_faces = mesh.faces.size();
     size_t num_vertices = mesh.vertices.size();
@@ -195,8 +201,8 @@ void update(EngineCore& engine_core) {
 
 
             transformed_vertex = scale_matrix * transformed_vertex;
+            transformed_vertex = translation_matrix * transformed_vertex;
 
-            transformed_vertex.z += 2.;
         
             transformed_vertices[j] =  transformed_vertex;
         }

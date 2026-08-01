@@ -167,6 +167,11 @@ void update(EngineCore& engine_core) {
     mesh.rotation.y += 0.01;
     mesh.rotation.z += 0.01;
 
+    mesh.scale.x += 0.02;
+    mesh.scale.y += 0.02;
+
+    geom::mat4 scale_matrix = geom::mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+
     size_t num_faces = mesh.faces.size();
     size_t num_vertices = mesh.vertices.size();
 
@@ -178,13 +183,18 @@ void update(EngineCore& engine_core) {
         face_vertices[1] = mesh.vertices[mesh_face.b];
         face_vertices[2] = mesh.vertices[mesh_face.c];
 
-        geom::vec3 transformed_vertices[3];
+        geom::vec4 transformed_vertices[3];
 
         // Apply transformations
         for (size_t j = 0; j < 3; j++) {
-            geom::vec3 transformed_vertex = geom::vec3_rotate_x(face_vertices[j], mesh.rotation.x);
+            geom::vec4 transformed_vertex = geom::vec4_from_vec3(face_vertices[j]);
+
+            /*geom::vec3 transformed_vertex = geom::vec3_rotate_x(face_vertices[j], mesh.rotation.x);
             transformed_vertex = geom::vec3_rotate_z(transformed_vertex, mesh.rotation.z);
-            transformed_vertex = geom::vec3_rotate_y(transformed_vertex, mesh.rotation.y);
+            transformed_vertex = geom::vec3_rotate_y(transformed_vertex, mesh.rotation.y);*/
+
+
+            transformed_vertex = scale_matrix * transformed_vertex;
 
             transformed_vertex.z += 2.;
         
@@ -194,9 +204,9 @@ void update(EngineCore& engine_core) {
         if (cull_method == CullMethod::CULL_BACKFACE) {
 
             // Clockwise
-            geom::vec3 vector_a = transformed_vertices[0]; /*   A   */
-            geom::vec3 vector_b = transformed_vertices[1]; /*  / \  */
-            geom::vec3 vector_c = transformed_vertices[2]; /* C---B */
+            geom::vec3 vector_a = transformed_vertices[0].xyz(); /*   A   */
+            geom::vec3 vector_b = transformed_vertices[1].xyz(); /*  / \  */
+            geom::vec3 vector_c = transformed_vertices[2].xyz(); /* C---B */
 
             geom::vec3 vector_ab = vector_b - vector_a;
             geom::vec3 vector_ac = vector_c - vector_a;
@@ -212,7 +222,7 @@ void update(EngineCore& engine_core) {
 
         // Loop all three vertices to perform projection
         for (size_t j = 0; j < 3; j++) {
-            projected_points[j] = project(engine_core, transformed_vertices[j]);
+            projected_points[j] = project(engine_core, transformed_vertices[j].xyz());
 
             projected_points[j].x += engine_core.window.window_width / 2.0f;
             projected_points[j].y += engine_core.window.window_height / 2.0f;

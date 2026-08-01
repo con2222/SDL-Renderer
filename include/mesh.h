@@ -17,6 +17,8 @@ struct Mesh {
     std::vector<geom::vec3> vertices; // dynamic array of vertices
     std::vector<Face> faces; // dynamic array of faces
     geom::vec3 rotation; // rotation with x, y, and z values
+    geom::vec3 scale = { 1.0, 1.0, 1.0 }; // scale with x, y and z values
+    geom::vec3 translation; // translation with x, y and z values
 };
 
 extern Mesh mesh;

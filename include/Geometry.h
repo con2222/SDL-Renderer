@@ -186,6 +186,10 @@ namespace geom {
         };
     }
 
+    inline vec4 vec4_from_vec3(const vec3& vec) {
+        return {vec.x, vec.y, vec.z, 1.f};
+    }
+
     /* End Vector Implementation */
 
 
@@ -326,6 +330,21 @@ namespace geom {
         }
         return result;
     }
+
+    using mat2 = matrix<2, 2>;
+    using mat3 = matrix<3, 3>;
+    using mat4 = matrix<4, 4>;
+
+    inline mat4 mat4_make_scale(float sx, float sy, float sz) {
+        mat4 m = mat4::identity();
+
+        m[0][0] = sx;
+        m[1][1] = sy;
+        m[2][2] = sz;
+
+        return m;
+    }
+
     /* End Matrix Implementation */
 
     /* Utility func */

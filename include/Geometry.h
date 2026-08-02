@@ -355,6 +355,62 @@ namespace geom {
         return m;
     }
 
+    inline mat4 mat4_make_rotation_x(float angle) {
+        float c = cos(angle);
+        float s = sin(angle);
+
+        mat4 m = mat4::identity();
+        m[1][1] = c;
+        m[1][2] = -s;
+        m[2][1] = s;
+        m[2][2] = c;
+        return m;
+    }
+
+    inline mat4 mat4_make_rotation_y(float angle) {
+        float c = cos(angle);
+        float s = sin(angle);
+            
+        mat4 m = mat4::identity();
+        m[0][0] = c;
+        m[0][2] = s;
+        m[2][0] = -s;
+        m[2][2] = c;
+        return m;
+    }
+
+    inline mat4 mat4_make_rotation_z(float angle) {
+        float c = cos(angle);
+        float s = sin(angle);
+        
+        mat4 m = mat4::identity();
+        m[0][0] = c;
+        m[0][1] = -s;
+        m[1][0] = s;
+        m[1][1] = c;
+        return m;
+    }
+
+    inline mat4 mat4_make_perspective(float fov, float aspect, float znear, float zfar) {
+        mat4 m = mat4::identity();
+        m[0][0] = aspect * (1 / std::tan(fov / 2));
+        m[1][1] = 1 / std::tan(fov / 2);
+        m[2][2] = zfar / (zfar - znear);
+        m[2][3] = (-zfar * znear) / (zfar - znear);
+        m[3][2] = 1.f;
+        return m;
+    }
+
+    inline vec4 project(mat4 mat_proj, vec4 v) {
+        vec4 result = mat_proj * v;
+        if (result.w != 0) {
+            result.x /= result.w;
+            result.y /= result.w;
+            result.z /= result.w;
+        }
+        return result;
+    }
+
     /* End Matrix Implementation */
 
     /* Utility func */

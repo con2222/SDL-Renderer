@@ -16,6 +16,7 @@ using namespace C2Renderer;
 const char* OBJ_FILENAME = "assets/cube.obj"; 
 C2Renderer::RenderMethod render_method;
 C2Renderer::CullMethod cull_method;
+geom::mat4 projection_matrix;
 
 geom::vec2 project(EngineCore& engine_core, geom::vec3 point);
 
@@ -167,8 +168,8 @@ void update(EngineCore& engine_core) {
     mesh.rotation.y += 0.01;
     mesh.rotation.z += 0.01;
 
-    //mesh.scale.x += 0.001;
-    //mesh.scale.y += 0.001;
+    mesh.scale.x += 0.001;
+    mesh.scale.y += 0.001;
 
     mesh.translation.x += 0.01;
     mesh.translation.z = 2.0;
@@ -176,7 +177,13 @@ void update(EngineCore& engine_core) {
 
     geom::mat4 scale_matrix = geom::mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
     geom::mat4 translation_matrix = geom::mat4_make_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
+    geom::mat4 rotation_matrix_x = geom::mat4_make_rotation_x(mesh.rotation.x);
+    geom::mat4 rotation_matrix_y = geom::mat4_make_rotation_y(mesh.rotation.y);
+    geom::mat4 rotation_matrix_z = geom::mat4_make_rotation_z(mesh.rotation.z);
+    geom::mat4 rotation_matrix = rotation_matrix_z * rotation_matrix_y * rotation_matrix_x;
 
+
+    geom::mat4 world_matrix = translation_matrix * rotation_matrix * scale_matrix;
 
     size_t num_faces = mesh.faces.size();
     size_t num_vertices = mesh.vertices.size();
@@ -194,17 +201,7 @@ void update(EngineCore& engine_core) {
         // Apply transformations
         for (size_t j = 0; j < 3; j++) {
             geom::vec4 transformed_vertex = geom::vec4_from_vec3(face_vertices[j]);
-
-            /*geom::vec3 transformed_vertex = geom::vec3_rotate_x(face_vertices[j], mesh.rotation.x);
-            transformed_vertex = geom::vec3_rotate_z(transformed_vertex, mesh.rotation.z);
-            transformed_vertex = geom::vec3_rotate_y(transformed_vertex, mesh.rotation.y);*/
-
-
-            transformed_vertex = scale_matrix * transformed_vertex;
-            transformed_vertex = translation_matrix * transformed_vertex;
-
-        
-            transformed_vertices[j] =  transformed_vertex;
+            transformed_vertices[j] =  world_matrix * transformed_vertex;
         }
 
         if (cull_method == CullMethod::CULL_BACKFACE) {
@@ -224,12 +221,17 @@ void update(EngineCore& engine_core) {
                 }
         }
 
-        geom::vec2 projected_points[3];
+        geom::vec4 projected_points[3];
 
         // Loop all three vertices to perform projection
         for (size_t j = 0; j < 3; j++) {
-            projected_points[j] = project(engine_core, transformed_vertices[j].xyz());
+            projected_points[j] = geom::project(projection_matrix, transformed_vertices[j]); // NDC all cordinated (-1, 1)
 
+            // 1. SCALE first (stretch -1..1 to -half_width..half_width)
+            projected_points[j].x *= engine_core.window.window_width / 2.0f;
+            projected_points[j].y *= engine_core.window.window_height / 2.0f;
+
+            // 2. SHIFT second (move the center from 0 to half_width)
             projected_points[j].x += engine_core.window.window_width / 2.0f;
             projected_points[j].y += engine_core.window.window_height / 2.0f;
         }
@@ -299,6 +301,12 @@ void setup(EngineCore& engine_core) {
     engine_core.color_buffer = new uint32_t[engine_core.window.window_width * engine_core.window.window_height]; 
     engine_core.color_buffer_texture = SDL_CreateTexture(engine_core.renderer, SDL_PIXELFORMAT_ARGB8888, 
         SDL_TEXTUREACCESS_STREAMING, engine_core.window.window_width, engine_core.window.window_height);
+
+    float fov = M_PI / 3.0; // the same as 180 / 3, or 60 degrees
+    float aspect = engine_core.window.window_height / static_cast<float>(engine_core.window.window_width);
+    float znear = 0.1;
+    float zfar = 100.0;
+    projection_matrix = geom::mat4_make_perspective(fov, aspect, znear, zfar);
 
     load_cube_mesh_data();
 

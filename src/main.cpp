@@ -13,7 +13,7 @@
 
 using namespace C2Renderer;
 
-const char* OBJ_FILENAME = "assets/cube.obj"; 
+const char* OBJ_FILENAME = "assets/f22.obj"; 
 C2Renderer::RenderMethod render_method;
 C2Renderer::CullMethod cull_method;
 geom::mat4 projection_matrix;
@@ -25,7 +25,10 @@ const double FRAME_TARGET_TIME = 1000.0 / FPS;
 uint64_t previous_frame_time = 0;
 const float fov_factor = 128;
 geom::vec3 camera_position { 0, 0, 0 };
-geom::vec3 light_direction { 0.3, 0.5, 0.2 }; // like sun light, shine on object
+//geom::vec3 light_direction { 0.3, 0.5, 0.2 }; // like sun light, shine on object
+
+geom::vec3 light_direction { 0, 0, 1 }; // like sun light, shine on object
+
 
 std::vector<Triangle> triangles_to_render;
 
@@ -68,12 +71,28 @@ void fill_flat_top_triangle(EngineCore& engine_core, int x1, int y1, int Mx, int
     float current_x2 = Mx;
 
     for (int y = y1; y <= y2; y++) {
+        int x_start = geom::round_float_to_int(current_x1);
+        int x_end = geom::round_float_to_int(current_x2); 
+        if (x_start > x_end) {
+            std::swap(x_start, x_end);
+        } 
+        
+        for (int x = x_start; x <= x_end; x++) {
+            draw_pixel(engine_core, x, y, color);
+        }
 
-
-        draw_line_DDA(engine_core, geom::round_float_to_int(current_x1), y, geom::round_float_to_int(current_x2), y, color);
         current_x1 += inv_slope1;
         current_x2 += inv_slope2;
     }
+}
+
+uint32_t light_apply_intensity(uint32_t original_color, float percentage_factor) {
+    uint32_t a = (original_color & 0xFF000000);
+    uint32_t r = (original_color & 0x00FF0000) * percentage_factor;
+    uint32_t g = (original_color & 0x0000FF00) * percentage_factor;
+    uint32_t b = (original_color & 0x000000FF) * percentage_factor;
+    uint32_t new_color = a | (r & 0x00FF0000) | (g & 0x0000FF00) | (b & 0x000000FF);
+    return new_color;
 }
 
 // DDA
@@ -187,7 +206,7 @@ void update(EngineCore& engine_core) {
     
     
     // mesh.translation.x += 0.01;
-    mesh.translation.z = 2.0;
+    mesh.translation.z = 5.0;
 
 
     geom::mat4 scale_matrix = geom::mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
@@ -274,6 +293,8 @@ void update(EngineCore& engine_core) {
             projected_points[j].x *= engine_core.window.window_width / 2.0f;
             projected_points[j].y *= engine_core.window.window_height / 2.0f;
 
+            projected_points[j].y *= -1.f;
+
             // 2. SHIFT second (move the center from 0 to half_width)
             projected_points[j].x += engine_core.window.window_width / 2.0f;
             projected_points[j].y += engine_core.window.window_height / 2.0f;
@@ -351,9 +372,9 @@ void setup(EngineCore& engine_core) {
     float zfar = 100.0;
     projection_matrix = geom::mat4_make_perspective(fov, aspect, znear, zfar);
 
-    load_cube_mesh_data();
+    //load_cube_mesh_data();
 
-    // load_obj_file_data(OBJ_FILENAME);
+    load_obj_file_data(OBJ_FILENAME);
     std::cout << "Vertices:" << mesh.vertices.size() << " " << "Faces:" << mesh.faces.size() << std::endl;
 }
 

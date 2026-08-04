@@ -99,9 +99,13 @@ void load_obj_file_data(const char* filename) {
                         } else {
                             face.c = v - 1;
                         }
+                        if (face.color == 0) {   
+                            face.color = C2::Color::Silver;
+                        }
                     }
                     i++;
                 }
+                
                 mesh.faces.push_back(face);
             }
         }

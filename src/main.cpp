@@ -25,6 +25,7 @@ const double FRAME_TARGET_TIME = 1000.0 / FPS;
 uint64_t previous_frame_time = 0;
 const float fov_factor = 128;
 geom::vec3 camera_position { 0, 0, 0 };
+geom::vec3 light_direction { 0.3, 0.5, 0.2 }; // like sun light, shine on object
 
 std::vector<Triangle> triangles_to_render;
 
@@ -43,7 +44,17 @@ void fill_flat_bottom_triangle(EngineCore& engine_core, int x0, int y0, int x1, 
     float current_x2 = x0;
 
     for (int y = y0; y <= y1; y++) {
-        draw_line_DDA(engine_core, geom::round_float_to_int(current_x1), y, geom::round_float_to_int(current_x2), y, color);
+        int x_start = geom::round_float_to_int(current_x1);
+        int x_end = geom::round_float_to_int(current_x2);
+        
+        if (x_start > x_end) {
+            std::swap(x_start, x_end);
+        }
+
+        for (int x = x_start; x <= x_end; x++) {
+            draw_pixel(engine_core, x, y, color);
+        }
+
         current_x1 += inv_slope1;
         current_x2 += inv_slope2;
     }
@@ -57,6 +68,8 @@ void fill_flat_top_triangle(EngineCore& engine_core, int x1, int y1, int Mx, int
     float current_x2 = Mx;
 
     for (int y = y1; y <= y2; y++) {
+
+
         draw_line_DDA(engine_core, geom::round_float_to_int(current_x1), y, geom::round_float_to_int(current_x2), y, color);
         current_x1 += inv_slope1;
         current_x2 += inv_slope2;
@@ -167,11 +180,13 @@ void update(EngineCore& engine_core) {
     mesh.rotation.x += 0.01;
     mesh.rotation.y += 0.01;
     mesh.rotation.z += 0.01;
-
-    mesh.scale.x += 0.001;
-    mesh.scale.y += 0.001;
-
-    mesh.translation.x += 0.01;
+    
+    /*
+    mesh.scale.x += 0.5;
+    mesh.scale.y = 0.5;*/
+    
+    
+    // mesh.translation.x += 0.01;
     mesh.translation.z = 2.0;
 
 
@@ -187,6 +202,8 @@ void update(EngineCore& engine_core) {
 
     size_t num_faces = mesh.faces.size();
     size_t num_vertices = mesh.vertices.size();
+
+    geom::vec3 light_dir = geom::normalize(light_direction * -1.0f);
 
     for (size_t i = 0; i < num_faces; i++) {
         Face mesh_face = mesh.faces[i];
@@ -220,6 +237,32 @@ void update(EngineCore& engine_core) {
                 continue;
                 }
         }
+
+        // Test flat shade
+        geom::vec3 vector_a = transformed_vertices[0].xyz(); /*   A   */
+        geom::vec3 vector_b = transformed_vertices[1].xyz(); /*  / \  */
+        geom::vec3 vector_c = transformed_vertices[2].xyz(); /* C---B */
+
+        geom::vec3 normal_dir = geom::normalize(geom::cross(vector_b - vector_a, vector_c - vector_a));
+        float product = geom::dot(normal_dir, light_dir);
+
+        float ambient_light = 0.2f;
+        float diffuse_light = std::max(0.f, product);
+        float intensity = std::min(1.0f, ambient_light + diffuse_light);
+
+        
+        // Take colors
+        uint32_t a = (mesh_face.color >> 24) & 0xFF;
+        uint32_t r = (mesh_face.color >> 16) & 0xFF;
+        uint32_t g = (mesh_face.color >> 8)  & 0xFF;
+        uint32_t b = mesh_face.color & 0xFF;
+
+        r = (uint32_t)(r * intensity);
+        g = (uint32_t)(g * intensity);
+        b = (uint32_t)(b * intensity);
+
+        uint32_t new_color = (a << 24) | (r << 16) | (g << 8) | b; 
+        mesh_face.color = new_color;
 
         geom::vec4 projected_points[3];
 

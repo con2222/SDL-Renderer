@@ -1,4 +1,5 @@
 #include "display.h"
+#include <iostream>
 
 
 namespace C2Renderer {

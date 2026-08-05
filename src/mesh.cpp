@@ -23,24 +23,25 @@ geom::vec3 cube_vertices[N_CUBE_VERTICES] = {
 
 Face cube_faces[N_CUBE_FACES] = {
     // front
-    {1, 2, 3, C2::Color::Red},
-    {1, 3, 4, C2::Color::Gold},
+    { .a = 1, .b = 2, .c = 3, .a_uv = { 0, 0 }, .b_uv = { 0, 1 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF },
+    { .a = 1, .b = 3, .c = 4, .a_uv = { 0, 0 }, .b_uv = { 1, 1 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF },
     // right
-    {4, 3, 5, C2::Color::RoyalBlue},
-    {4, 5, 6, C2::Color::Silver},
+    { .a = 4, .b = 3, .c = 5, .a_uv = { 0, 0 }, .b_uv = { 0, 1 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF },
+    { .a = 4, .b = 5, .c = 6, .a_uv = { 0, 0 }, .b_uv = { 1, 1 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF },
     // back
-    {6, 5, 7, C2::Color::Blue},
-    {6, 7, 8, C2::Color::DeepPink},
+    { .a = 6, .b = 5, .c = 7, .a_uv = { 0, 0 }, .b_uv = { 0, 1 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF },
+    { .a = 6, .b = 7, .c = 8, .a_uv = { 0, 0 }, .b_uv = { 1, 1 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF },
     // left
-    {8, 7, 2, C2::Color::Maroon},
-    {8, 2, 1, C2::Color::Brown},
+    { .a = 8, .b = 7, .c = 2, .a_uv = { 0, 0 }, .b_uv = { 0, 1 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF },
+    { .a = 8, .b = 2, .c = 1, .a_uv = { 0, 0 }, .b_uv = { 1, 1 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF },
     // top
-    {2, 7, 5, C2::Color::ForestGreen},
-    {2, 5, 3, C2::Color::Pink},
+    { .a = 2, .b = 7, .c = 5, .a_uv = { 0, 0 }, .b_uv = { 0, 1 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF },
+    { .a = 2, .b = 5, .c = 3, .a_uv = { 0, 0 }, .b_uv = { 1, 1 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF },
     // bottom
-    {6, 8, 1, C2::Color::Olive},
-    {6, 1, 4, C2::Color::Navy}
+    { .a = 6, .b = 8, .c = 1, .a_uv = { 0, 0 }, .b_uv = { 0, 1 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF },
+    { .a = 6, .b = 1, .c = 4, .a_uv = { 0, 0 }, .b_uv = { 1, 1 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF }
 };
+
 
 void load_cube_mesh_data() {
     for (int i = 0; i < N_CUBE_VERTICES; i++) {

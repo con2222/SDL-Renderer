@@ -1,9 +1,8 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-#include <iostream>
 #include <cstdint>
-#include "SDL2/SDL.h"
+#include <SDL2/SDL.h>
 
 namespace C2Renderer {
 

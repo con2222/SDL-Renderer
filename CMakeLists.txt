@@ -26,6 +26,7 @@ set(SOURCES
     src/display.cpp
     src/mesh.cpp
     src/triangle.cpp
+    src/texture.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

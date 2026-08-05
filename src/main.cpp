@@ -1,9 +1,10 @@
 #include "Configurations.h"
 #include "Geometry.h"
-#include "display.h"
 #include "mesh.h"
+#include "display.h"
 #include "color.h"
 #include "triangle.h"
+#include "texture.h"
 
 #include <cstdint>
 #include <vector>
@@ -13,7 +14,7 @@
 
 using namespace C2Renderer;
 
-const char* OBJ_FILENAME = "assets/f22.obj"; 
+const char* OBJ_FILENAME = "assets/f117.obj"; 
 C2Renderer::RenderMethod render_method;
 C2Renderer::CullMethod cull_method;
 geom::mat4 projection_matrix;
@@ -174,6 +175,12 @@ void process_input(bool& is_running) {
             if (event.key.keysym.sym == SDLK_4) {
                 render_method = RenderMethod::RENDER_FILL_TRIANGLE_WIRE;
             }
+            if (event.key.keysym.sym == SDLK_5) {
+                render_method = RenderMethod::RENDER_TEXTURED;
+            }
+            if (event.key.keysym.sym == SDLK_6) {
+                render_method = RenderMethod::RENDER_TEXTURED_WIRE;
+            }
             if (event.key.keysym.sym == SDLK_c) {
                 cull_method = CullMethod::CULL_BACKFACE;
             }
@@ -308,7 +315,10 @@ void update(EngineCore& engine_core) {
         projected_triangle.points[2] = { projected_points[2].x, projected_points[2].y };
         projected_triangle.color = mesh_face.color;
         projected_triangle.avg_depth = avg_depth;
-        
+        projected_triangle.texcoords[0] = { mesh_face.a_uv.u, mesh_face.a_uv.v };
+        projected_triangle.texcoords[1] = { mesh_face.b_uv.u, mesh_face.b_uv.v };
+        projected_triangle.texcoords[2] = { mesh_face.c_uv.u, mesh_face.c_uv.v };
+
         triangles_to_render.push_back(projected_triangle); 
     }
     
@@ -336,7 +346,17 @@ void render(EngineCore& engine_core) {
             );
         }
         
-        if (render_method == RenderMethod::RENDER_WIRE || render_method == RenderMethod::RENDER_WIRE_VERTEX || render_method == RenderMethod::RENDER_FILL_TRIANGLE_WIRE) {
+        if (render_method == RenderMethod::RENDER_TEXTURED || render_method == RenderMethod::RENDER_TEXTURED_WIRE) {
+            draw_textured_triangle(engine_core,
+               triangle.points[0].x, triangle.points[0].y, triangle.texcoords[0].u, triangle.texcoords[0].v,
+               triangle.points[1].x, triangle.points[1].y, triangle.texcoords[1].u, triangle.texcoords[1].v,
+               triangle.points[2].x, triangle.points[2].y, triangle.texcoords[2].u, triangle.texcoords[2].v,
+               mesh_texture
+            );
+        }
+        
+
+        if (render_method == RenderMethod::RENDER_WIRE || render_method == RenderMethod::RENDER_WIRE_VERTEX || render_method == RenderMethod::RENDER_FILL_TRIANGLE_WIRE || render_method == RenderMethod::RENDER_TEXTURED_WIRE) {
             draw_triangle(engine_core,
                 triangle.points[0].x, triangle.points[0].y,
                 triangle.points[1].x, triangle.points[1].y,
@@ -359,7 +379,7 @@ void render(EngineCore& engine_core) {
 }
 
 void setup(EngineCore& engine_core) {
-    cull_method = CullMethod::CULL_NONE;
+    cull_method = CullMethod::CULL_BACKFACE;
     render_method = RenderMethod::RENDER_WIRE;
     
     engine_core.color_buffer = new uint32_t[engine_core.window.window_width * engine_core.window.window_height]; 
@@ -371,10 +391,16 @@ void setup(EngineCore& engine_core) {
     float znear = 0.1;
     float zfar = 100.0;
     projection_matrix = geom::mat4_make_perspective(fov, aspect, znear, zfar);
+    
+    // Load hard coded texture
+    mesh_texture = (uint32_t*)REDBRICK_TEXTURE;
+    texture_height = 64;
+    texture_width = 64;
 
-    //load_cube_mesh_data();
 
-    load_obj_file_data(OBJ_FILENAME);
+    load_cube_mesh_data();
+
+    // load_obj_file_data(OBJ_FILENAME);
     std::cout << "Vertices:" << mesh.vertices.size() << " " << "Faces:" << mesh.faces.size() << std::endl;
 }
 

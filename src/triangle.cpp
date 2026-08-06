@@ -27,6 +27,11 @@ void draw_textured_triangle(C2Renderer::EngineCore &engine_core,
         int x1, int y1, float z1, float w1, float u1, float v1, 
         int x2, int y2, float z2, float w2, float u2, float v2,
         uint32_t* texture) {
+    v0 = 1 - v0;
+    v1 = 1 - v1;
+    v2 = 1 - v2;
+
+
     if (y0 > y1) {
         std::swap(y0, y1);
         std::swap(x0, x1);

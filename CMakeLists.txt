@@ -27,6 +27,7 @@ set(SOURCES
     src/mesh.cpp
     src/triangle.cpp
     src/texture.cpp
+    src/upng.c
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

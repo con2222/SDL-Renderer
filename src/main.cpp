@@ -14,7 +14,8 @@
 
 using namespace C2Renderer;
 
-const char* OBJ_FILENAME = "assets/f117.obj"; 
+const char* OBJ_FILENAME = "assets/f22.obj";
+const char* PNG_FILENAME = "assets/f22.png"; 
 C2Renderer::RenderMethod render_method;
 C2Renderer::CullMethod cull_method;
 geom::mat4 projection_matrix;
@@ -239,6 +240,11 @@ void update(EngineCore& engine_core) {
         face_vertices[1] = mesh.vertices[mesh_face.b];
         face_vertices[2] = mesh.vertices[mesh_face.c];
 
+        geom::vec2 face_textures[3];
+        face_textures[0] = mesh.tex_coords[mesh_face.a_t];
+        face_textures[1] = mesh.tex_coords[mesh_face.b_t];
+        face_textures[2] = mesh.tex_coords[mesh_face.c_t];
+
         geom::vec4 transformed_vertices[3];
 
         // Apply transformations
@@ -315,9 +321,12 @@ void update(EngineCore& engine_core) {
         projected_triangle.points[2] = { projected_points[2].x, projected_points[2].y, projected_points[2].z, projected_points[2].w };
         projected_triangle.color = mesh_face.color;
         projected_triangle.avg_depth = avg_depth;
-        projected_triangle.texcoords[0] = { mesh_face.a_uv.u, mesh_face.a_uv.v };
-        projected_triangle.texcoords[1] = { mesh_face.b_uv.u, mesh_face.b_uv.v };
-        projected_triangle.texcoords[2] = { mesh_face.c_uv.u, mesh_face.c_uv.v };
+        //projected_triangle.texcoords[0] = { mesh_face.a_uv.u, mesh_face.a_uv.v };
+        //projected_triangle.texcoords[1] = { mesh_face.b_uv.u, mesh_face.b_uv.v };
+        //projected_triangle.texcoords[2] = { mesh_face.c_uv.u, mesh_face.c_uv.v };
+        projected_triangle.texcoords[0] = { (float)face_textures[0].x, (float)face_textures[0].y };
+        projected_triangle.texcoords[1] = { (float)face_textures[1].x, (float)face_textures[1].y };
+        projected_triangle.texcoords[2] = { (float)face_textures[2].x, (float)face_textures[2].y };
 
         triangles_to_render.push_back(projected_triangle); 
     }
@@ -383,7 +392,7 @@ void setup(EngineCore& engine_core) {
     render_method = RenderMethod::RENDER_WIRE;
     
     engine_core.color_buffer = new uint32_t[engine_core.window.window_width * engine_core.window.window_height]; 
-    engine_core.color_buffer_texture = SDL_CreateTexture(engine_core.renderer, SDL_PIXELFORMAT_ARGB8888, 
+    engine_core.color_buffer_texture = SDL_CreateTexture(engine_core.renderer, SDL_PIXELFORMAT_RGBA32, 
         SDL_TEXTUREACCESS_STREAMING, engine_core.window.window_width, engine_core.window.window_height);
 
     float fov = M_PI / 3.0; // the same as 180 / 3, or 60 degrees
@@ -393,14 +402,15 @@ void setup(EngineCore& engine_core) {
     projection_matrix = geom::mat4_make_perspective(fov, aspect, znear, zfar);
     
     // Load hard coded texture
-    mesh_texture = (uint32_t*)REDBRICK_TEXTURE;
+    /* mesh_texture = (uint32_t*)REDBRICK_TEXTURE;
     texture_height = 64;
-    texture_width = 64;
+    texture_width = 64; */
+
+    //load_cube_mesh_data();
 
 
-    load_cube_mesh_data();
-
-    // load_obj_file_data(OBJ_FILENAME);
+    load_obj_file_data(OBJ_FILENAME);
+    load_png_texture_data(PNG_FILENAME);
     std::cout << "Vertices:" << mesh.vertices.size() << " " << "Faces:" << mesh.faces.size() << std::endl;
 }
 
@@ -426,6 +436,7 @@ int main(int argc, char* argv[]) {
     }
     
     destroy_window(engine_core);
+    upng_free(png_texture);
 
     return 0;
 }

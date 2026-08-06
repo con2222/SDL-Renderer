@@ -13,6 +13,11 @@ struct Face {
     int a;
     int b;
     int c;
+
+    int a_t;
+    int b_t;
+    int c_t;
+
     Texel a_uv;
     Texel b_uv;
     Texel c_uv;

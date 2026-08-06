@@ -48,6 +48,14 @@ void clear_color_buffer(EngineCore& engine_core, uint32_t color) {
     }
 }
 
+void clear_z_buffer(EngineCore& engine_core) {
+    for (int y = 0; y < engine_core.window.window_height; y++) {
+        for (int x = 0; x < engine_core.window.window_width; x++) {
+            engine_core.z_buffer[y * engine_core.window.window_width + x] = 1.f;
+        }
+    }
+}
+
 void draw_grid(EngineCore& engine_core, uint32_t color, int height, int width, int offset) {
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
@@ -81,6 +89,7 @@ void draw_dot_grid(EngineCore& engine_core, uint32_t color, int offset) {
 
 void destroy_window(EngineCore& engine_core) {
     delete[] engine_core.color_buffer;
+    delete[] engine_core.z_buffer;
     SDL_DestroyRenderer(engine_core.renderer);
     SDL_DestroyWindow(engine_core.window.SDL_window);
     SDL_Quit();

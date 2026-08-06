@@ -130,5 +130,12 @@ void draw_texel(C2Renderer::EngineCore& engine_core, int x, int y, uint32_t* tex
     int tex_x = abs(static_cast<int>(interpolated_u * texture_width));
     int tex_y = abs(static_cast<int>(interpolated_v * texture_height));
 
-    C2Renderer::draw_pixel(engine_core, x, y, texture[(texture_width * tex_y) + tex_x]);
+    // Adjust 1/w so the pixels that are closer to the camera have smaller values
+    interpolated_reciprocal_w = 1.f - interpolated_reciprocal_w;
+    
+    // Only draw the pixel if the depth value is less than the one previously stored in the z_buffer
+    if (interpolated_reciprocal_w < engine_core.z_buffer[engine_core.window.window_width * y + x]) {
+        C2Renderer::draw_pixel(engine_core, x, y, texture[(texture_width * tex_y) + tex_x]);
+        engine_core.z_buffer[engine_core.window.window_width * y + x] = interpolated_reciprocal_w;
+    }
 }

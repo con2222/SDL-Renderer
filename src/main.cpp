@@ -14,8 +14,8 @@
 
 using namespace C2Renderer;
 
-const char* OBJ_FILENAME = "assets/f22.obj";
-const char* PNG_FILENAME = "assets/f22.png"; 
+const char* OBJ_FILENAME = "assets/f117.obj";
+const char* PNG_FILENAME = "assets/f117.png"; 
 C2Renderer::RenderMethod render_method;
 C2Renderer::CullMethod cull_method;
 geom::mat4 projection_matrix;
@@ -384,6 +384,7 @@ void render(EngineCore& engine_core) {
 
     render_color_buffer(engine_core);
     clear_color_buffer(engine_core, 0xFF000000); 
+    clear_z_buffer(engine_core);
     SDL_RenderPresent(engine_core.renderer);
 }
 
@@ -392,6 +393,7 @@ void setup(EngineCore& engine_core) {
     render_method = RenderMethod::RENDER_WIRE;
     
     engine_core.color_buffer = new uint32_t[engine_core.window.window_width * engine_core.window.window_height]; 
+    engine_core.z_buffer = new float[engine_core.window.window_width * engine_core.window.window_height]; 
     engine_core.color_buffer_texture = SDL_CreateTexture(engine_core.renderer, SDL_PIXELFORMAT_RGBA32, 
         SDL_TEXTUREACCESS_STREAMING, engine_core.window.window_width, engine_core.window.window_height);
 

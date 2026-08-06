@@ -46,6 +46,10 @@ namespace geom {
         double operator[](const int i) const {
             assert(i>=0 && i<3); return data[i];
         }
+
+        vec<2> xy() const {
+            return vec<2>(x, y);
+        }
     };
 
     template<> struct vec<4> {
@@ -68,6 +72,10 @@ namespace geom {
 
         vec<3> xyz() const {
             return vec<3>(x, y, z);
+        }
+
+        vec<2> xy() const {
+            return vec<2>(x, y);
         }
     };
 

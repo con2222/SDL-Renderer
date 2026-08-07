@@ -13,8 +13,8 @@
 
 using namespace C2Renderer;
 
-const char* OBJ_FILENAME = "assets/f117.obj";
-const char* PNG_FILENAME = "assets/f117.png"; 
+const char* OBJ_FILENAME = "assets/drone.obj";
+const char* PNG_FILENAME = "assets/drone.png"; 
 C2Renderer::RenderMethod render_method;
 C2Renderer::CullMethod cull_method;
 geom::mat4 projection_matrix;
@@ -174,6 +174,12 @@ void update(EngineCore& engine_core) {
             transformed_vertices[j] =  world_matrix * transformed_vertex;
         }
 
+        if (transformed_vertices[0].z < 0.1f || 
+            transformed_vertices[1].z < 0.1f || 
+            transformed_vertices[2].z < 0.1f) {
+            continue; 
+        } 
+
         if (cull_method == CullMethod::CULL_BACKFACE) {
 
             // Clockwise
@@ -252,18 +258,12 @@ void update(EngineCore& engine_core) {
         triangles_to_render.push_back(projected_triangle); 
     }
     
-    std::sort(triangles_to_render.begin(), triangles_to_render.end(), 
-    [](Triangle a, Triangle b){
-            return a.avg_depth > b.avg_depth;
-            }
-    );
 }
 
 void render(EngineCore& engine_core) {
 
     size_t triangles_count = triangles_to_render.size();
 
-    
     for (int i = 0; i < triangles_count; i++) {
         Triangle triangle = triangles_to_render[i];
 
@@ -296,7 +296,7 @@ void render(EngineCore& engine_core) {
         }
 
         if (render_method == C2Renderer::RenderMethod::RENDER_WIRE_VERTEX) {
-            draw_rectangle(engine_core, triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6 , C2::Color::Red);
+            draw_rectangle(engine_core, triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, C2::Color::Red);
             draw_rectangle(engine_core, triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, C2::Color::Red);
             draw_rectangle(engine_core, triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, C2::Color::Red); 
         }
@@ -310,6 +310,7 @@ void render(EngineCore& engine_core) {
 }
 
 void setup(EngineCore& engine_core) {
+    triangles_to_render.reserve(15000);
     cull_method = CullMethod::CULL_BACKFACE;
     render_method = RenderMethod::RENDER_WIRE;
     

@@ -69,6 +69,10 @@ void draw_filled_triangle(C2Renderer::EngineCore& engine_core,
             if (x_start > x_end) std::swap(x_start, x_end);
 
             for (int x = x_start; x < x_end; x++) {
+                if (x < 0 || x >= engine_core.window.window_width || y < 0 || y >= engine_core.window.window_height) {
+                    continue;
+                }
+
                 geom::vec2 point_p = geom::vec2(x, y);
                 geom::vec3 weights = barycentric_weights(point_a, point_b, point_c, point_p);
                 float alpha = weights[0];
@@ -95,6 +99,9 @@ void draw_filled_triangle(C2Renderer::EngineCore& engine_core,
             if (x_start > x_end) std::swap(x_start, x_end);
 
             for (int x = x_start; x < x_end; x++) {
+                if (x < 0 || x >= engine_core.window.window_width || y < 0 || y >= engine_core.window.window_height) {
+                    continue;
+                }
                 geom::vec2 point_p = geom::vec2(x, y);
                 geom::vec3 weights = barycentric_weights(point_a, point_b, point_c, point_p);
                 float alpha = weights[0];
@@ -194,6 +201,10 @@ void draw_textured_triangle(C2Renderer::EngineCore &engine_core,
 
 void draw_texel(C2Renderer::EngineCore& engine_core, int x, int y, uint32_t* texture, geom::vec4 point_a, geom::vec4 point_b, geom::vec4 point_c, float u0, float v0, float u1, float v1, float u2, float v2) {
     
+    if (x < 0 || x >= engine_core.window.window_width || y < 0 || y >= engine_core.window.window_height) {
+        return;
+    }
+
     geom::vec2 point_p = geom::vec2(x, y);
     geom::vec2 a = point_a.xy();
     geom::vec2 b = point_b.xy();
@@ -218,8 +229,11 @@ void draw_texel(C2Renderer::EngineCore& engine_core, int x, int y, uint32_t* tex
     interpolated_u /= interpolated_reciprocal_w;
     interpolated_v /= interpolated_reciprocal_w;
 
-    int tex_x = abs(static_cast<int>(interpolated_u * texture_width));
-    int tex_y = abs(static_cast<int>(interpolated_v * texture_height));
+    int tex_x = static_cast<int>(interpolated_u * texture_width) % texture_width;
+    int tex_y = static_cast<int>(interpolated_v * texture_height) % texture_height;
+
+    if (tex_x < 0) tex_x += texture_width;
+    if (tex_y < 0) tex_y += texture_height; 
 
     // Adjust 1/w so the pixels that are closer to the camera have smaller values
     interpolated_reciprocal_w = 1.f - interpolated_reciprocal_w;

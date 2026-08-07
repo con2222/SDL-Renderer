@@ -8,7 +8,6 @@
 
 #include <cstdint>
 #include <vector>
-#include <utility>
 #include <algorithm>
 
 
@@ -36,57 +35,7 @@ std::vector<Triangle> triangles_to_render;
 
 void draw_filled_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
 void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1, uint32_t color);
-void fill_flat_bottom_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int Mx, int My, uint32_t color);
-void fill_flat_top_triangle(EngineCore& engine_core, int x1, int y1, int Mx, int My, int x2, int y2, uint32_t color);
 
-
-void fill_flat_bottom_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int Mx, int My, uint32_t color) {
-
-    float inv_slope1 = static_cast<float>((x1 - x0)) / (y1 - y0);
-    float inv_slope2 = static_cast<float>((Mx - x0)) / (My - y0);
-
-    float current_x1 = x0;
-    float current_x2 = x0;
-
-    for (int y = y0; y <= y1; y++) {
-        int x_start = geom::round_float_to_int(current_x1);
-        int x_end = geom::round_float_to_int(current_x2);
-        
-        if (x_start > x_end) {
-            std::swap(x_start, x_end);
-        }
-
-        for (int x = x_start; x <= x_end; x++) {
-            draw_pixel(engine_core, x, y, color);
-        }
-
-        current_x1 += inv_slope1;
-        current_x2 += inv_slope2;
-    }
-}
-
-void fill_flat_top_triangle(EngineCore& engine_core, int x1, int y1, int Mx, int My, int x2, int y2, uint32_t color) {
-    float inv_slope1 = static_cast<float>((x2 - x1)) / (y2 - y1);
-    float inv_slope2 = static_cast<float>((x2 - Mx)) / (y2 - My);
-
-    float current_x1 = x1;
-    float current_x2 = Mx;
-
-    for (int y = y1; y <= y2; y++) {
-        int x_start = geom::round_float_to_int(current_x1);
-        int x_end = geom::round_float_to_int(current_x2); 
-        if (x_start > x_end) {
-            std::swap(x_start, x_end);
-        } 
-        
-        for (int x = x_start; x <= x_end; x++) {
-            draw_pixel(engine_core, x, y, color);
-        }
-
-        current_x1 += inv_slope1;
-        current_x2 += inv_slope2;
-    }
-}
 
 uint32_t light_apply_intensity(uint32_t original_color, float percentage_factor) {
     uint32_t a = (original_color & 0xFF000000);
@@ -122,34 +71,6 @@ void draw_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int 
     draw_line_DDA(engine_core, x1, y1, x2, y2, color);
     draw_line_DDA(engine_core, x2, y2, x0, y0, color);
 
-}
-
-void draw_filled_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
-    if (y0 > y1) {
-        std::swap(y0, y1);
-        std::swap(x0, x1);
-    }
-    if (y1 > y2) {
-        std::swap(y1, y2);
-        std::swap(x1, x2);
-    }
-    if (y0 > y1) {
-        std::swap(y0, y1);
-        std::swap(x0, x1);
-    }
-
-    if (y2 == y0) return;
-
-    int My = y1;
-    int Mx = ((x2 - x0) * (y1 - y0) / static_cast<float>((y2 - y0))) + x0;
-
-    if (y1 > y0) {
-        fill_flat_bottom_triangle(engine_core, x0, y0, x1, y1, Mx, My, color);
-    }
-
-    if (y2 > y1) {
-        fill_flat_top_triangle(engine_core, x1, y1, Mx, My, x2, y2, color);
-    }
 }
 
 void process_input(bool& is_running) {
@@ -204,8 +125,8 @@ void update(EngineCore& engine_core) {
     previous_frame_time = SDL_GetTicks64();
 
 
-    // mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.01;
+    mesh.rotation.x += 0.01;
+    // mesh.rotation.y += 0.01;
     // mesh.rotation.z += 0.01;
     
     /*
@@ -348,9 +269,9 @@ void render(EngineCore& engine_core) {
 
         if (render_method == RenderMethod::RENDER_FILL_TRIANGLE || render_method == RenderMethod::RENDER_FILL_TRIANGLE_WIRE) {
             draw_filled_triangle(engine_core,
-                triangle.points[0].x, triangle.points[0].y,
-                triangle.points[1].x, triangle.points[1].y,
-                triangle.points[2].x, triangle.points[2].y,
+                triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w,
+                triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w,
+                triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w,
                 triangle.color
             );
         }

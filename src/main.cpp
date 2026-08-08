@@ -1,5 +1,7 @@
 #include "Configurations.h"
 #include "Geometry.h"
+#include "SDL_keycode.h"
+#include "camera.h"
 #include "mesh.h"
 #include "display.h"
 #include "color.h"
@@ -13,23 +15,22 @@
 
 using namespace C2Renderer;
 
-const char* OBJ_FILENAME = "assets/drone.obj";
-const char* PNG_FILENAME = "assets/drone.png"; 
+const char* OBJ_FILENAME = "assets/f117.obj";
+const char* PNG_FILENAME = "assets/f117.png"; 
 C2Renderer::RenderMethod render_method;
 C2Renderer::CullMethod cull_method;
 geom::mat4 projection_matrix;
+geom::mat4 world_matrix;
+geom::mat4 view_matrix;
 
 geom::vec2 project(EngineCore& engine_core, geom::vec3 point);
 
-const int FPS = 240;
+const int FPS = 60;
 const double FRAME_TARGET_TIME = 1000.0 / FPS;
 uint64_t previous_frame_time = 0;
 const float fov_factor = 128;
-geom::vec3 camera_position { 0, 0, 0 };
-//geom::vec3 light_direction { 0.3, 0.5, 0.2 }; // like sun light, shine on object
-
 geom::vec3 light_direction { 0, 0, 1 }; // like sun light, shine on object
-
+float delta_time = 0;
 
 std::vector<Triangle> triangles_to_render;
 
@@ -51,7 +52,7 @@ void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1, uint
     int delta_x = x1 - x0;
     int delta_y = y1 - y0;
 
-    int side_length = abs(delta_x) > abs(delta_y) ? abs(delta_x) : abs(delta_y);
+    int side_length = geom::abs(delta_x) > geom::abs(delta_y) ? geom::abs(delta_x) : geom::abs(delta_y);
 
     float x_inc = delta_x / static_cast<float>(side_length);
     float y_inc = delta_y / static_cast<float>(side_length);
@@ -73,6 +74,7 @@ void draw_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int 
 
 }
 
+/*
 void process_input(bool& is_running) {
     SDL_Event event;
     SDL_PollEvent(&event);
@@ -106,12 +108,80 @@ void process_input(bool& is_running) {
             if (event.key.keysym.sym == SDLK_c) {
                 cull_method = CullMethod::CULL_BACKFACE;
             }
-            if (event.key.keysym.sym == SDLK_d) {
+            if (event.key.keysym.sym == SDLK_x) {
                 cull_method = CullMethod::CULL_NONE;
+            }
+            if (event.key.keysym.sym == SDLK_SPACE) {
+                camera.position.y += camera.speed * delta_time;
+            }
+            if (event.key.keysym.sym == SDLK_LSHIFT) {
+                camera.position.y -= camera.speed * delta_time;
+            }
+            if (event.key.keysym.sym == SDLK_a) {
+                camera.yaw -=  1.0 * delta_time;
+            }
+            if (event.key.keysym.sym == SDLK_d) {
+                camera.yaw +=  1.0 * delta_time;
+            }
+            if (event.key.keysym.sym == SDLK_w) {
+                camera.forward_velocity = camera.direction * camera.speed * delta_time;
+                camera.position = camera.position + camera.forward_velocity;
+            }
+            if (event.key.keysym.sym == SDLK_s) {
+                camera.forward_velocity = camera.direction * camera.speed * delta_time;
+                camera.position = camera.position - camera.forward_velocity;
             }
             break;
         default:
             break;
+    }
+}*/
+
+void process_input(bool& is_running) {
+    SDL_Event event;
+
+    while (SDL_PollEvent(&event)) {
+        switch (event.type) {
+            case SDL_QUIT:
+                is_running = false;
+                break;
+            case SDL_KEYDOWN:
+                if (event.key.keysym.sym == SDLK_ESCAPE) is_running = false;
+                if (event.key.keysym.sym == SDLK_1) render_method = RenderMethod::RENDER_WIRE_VERTEX;
+                if (event.key.keysym.sym == SDLK_2) render_method = RenderMethod::RENDER_WIRE;
+                if (event.key.keysym.sym == SDLK_3) render_method = RenderMethod::RENDER_FILL_TRIANGLE;
+                if (event.key.keysym.sym == SDLK_4) render_method = RenderMethod::RENDER_FILL_TRIANGLE_WIRE;
+                if (event.key.keysym.sym == SDLK_5) render_method = RenderMethod::RENDER_TEXTURED;
+                if (event.key.keysym.sym == SDLK_6) render_method = RenderMethod::RENDER_TEXTURED_WIRE;
+                if (event.key.keysym.sym == SDLK_c) cull_method = CullMethod::CULL_BACKFACE;
+                if (event.key.keysym.sym == SDLK_x) cull_method = CullMethod::CULL_NONE;
+                break;
+            default:
+                break;
+        }
+    }
+
+    const uint8_t* key_state = SDL_GetKeyboardState(NULL);
+
+    if (key_state[SDL_SCANCODE_W]) {
+        camera.forward_velocity = camera.direction * camera.speed * delta_time;
+        camera.position = camera.position + camera.forward_velocity;
+    }
+    if (key_state[SDL_SCANCODE_S]) {
+        camera.forward_velocity = camera.direction * camera.speed * delta_time;
+        camera.position = camera.position - camera.forward_velocity;
+    }
+    if (key_state[SDL_SCANCODE_A]) {
+        camera.yaw += 1.5f * delta_time;
+    }
+    if (key_state[SDL_SCANCODE_D]) {
+        camera.yaw -= 1.5f * delta_time;
+    }
+    if (key_state[SDL_SCANCODE_SPACE]) {
+        camera.position.y += camera.up_speed * delta_time;
+    }
+    if (key_state[SDL_SCANCODE_RSHIFT] || key_state[SDL_SCANCODE_LSHIFT]) {
+        camera.position.y -= camera.up_speed * delta_time;
     }
 }
 
@@ -122,10 +192,12 @@ void update(EngineCore& engine_core) {
     if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME) {
         SDL_Delay(time_to_wait);
     }
+    
+    delta_time = (SDL_GetTicks64() - previous_frame_time) / 1000.0;
     previous_frame_time = SDL_GetTicks64();
 
 
-    mesh.rotation.x += 0.01;
+    //mesh.rotation.x += 0.01;
     // mesh.rotation.y += 0.01;
     // mesh.rotation.z += 0.01;
     
@@ -137,6 +209,13 @@ void update(EngineCore& engine_core) {
     // mesh.translation.x += 0.01;
     mesh.translation.z = 5.0;
 
+    geom::vec3 up = { 0, 1, 0 };
+    geom::vec3 target = { 0, 0, 1 };
+    geom::mat4 camera_yaw_rotation = geom::mat4_make_rotation_y(camera.yaw);
+    camera.direction = (camera_yaw_rotation * geom::vec4_from_vec3(target)).xyz();
+    target = camera.position + camera.direction;
+
+    view_matrix = look_at(camera.position, target, up);
 
     geom::mat4 scale_matrix = geom::mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
     geom::mat4 translation_matrix = geom::mat4_make_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
@@ -146,7 +225,7 @@ void update(EngineCore& engine_core) {
     geom::mat4 rotation_matrix = rotation_matrix_z * rotation_matrix_y * rotation_matrix_x;
 
 
-    geom::mat4 world_matrix = translation_matrix * rotation_matrix * scale_matrix;
+    world_matrix = translation_matrix * rotation_matrix * scale_matrix;
 
     size_t num_faces = mesh.faces.size();
     size_t num_vertices = mesh.vertices.size();
@@ -171,7 +250,7 @@ void update(EngineCore& engine_core) {
         // Apply transformations
         for (size_t j = 0; j < 3; j++) {
             geom::vec4 transformed_vertex = geom::vec4_from_vec3(face_vertices[j]);
-            transformed_vertices[j] =  world_matrix * transformed_vertex;
+            transformed_vertices[j] =  view_matrix * world_matrix * transformed_vertex;
         }
 
         if (transformed_vertices[0].z < 0.1f || 
@@ -190,7 +269,9 @@ void update(EngineCore& engine_core) {
             geom::vec3 vector_ab = vector_b - vector_a;
             geom::vec3 vector_ac = vector_c - vector_a;
             geom::vec3 normal = geom::cross(vector_ab, vector_ac); // left handed coordinate system
-            geom::vec3 camera_ray = camera_position - vector_a;
+            
+            geom::vec3 origin = { 0, 0, 0 };
+            geom::vec3 camera_ray = origin - vector_a;
             float product = geom::dot(normal, camera_ray);
             if (product < 0.0f) {
                 continue;
@@ -210,7 +291,7 @@ void update(EngineCore& engine_core) {
         float intensity = std::min(1.0f, ambient_light + diffuse_light);
 
         
-        // Take colors
+       // Take colors
         uint32_t a = (mesh_face.color >> 24) & 0xFF;
         uint32_t r = (mesh_face.color >> 16) & 0xFF;
         uint32_t g = (mesh_face.color >> 8)  & 0xFF;

@@ -27,6 +27,7 @@ set(SOURCES
     src/mesh.cpp
     src/triangle.cpp
     src/texture.cpp
+    src/camera.cpp
     src/upng.c
 )
 

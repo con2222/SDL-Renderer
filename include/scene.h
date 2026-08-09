@@ -13,7 +13,6 @@ struct SceneData {
     std::vector<Mesh> meshes;
     std::vector<Texture> textures;
     geom::mat4 view_matrix;
-    geom::mat4 world_matrix;
 
     geom::vec3 light_direction = { 0, 0, 1 };
 };

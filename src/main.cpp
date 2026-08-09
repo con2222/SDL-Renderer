@@ -23,7 +23,8 @@ geom::vec2 project(EngineCore& engine_core, geom::vec3 point);
 
 void draw_filled_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
 void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1, uint32_t color);
-
+void update_scene_matrices(SceneData& scene, FrameData& frame_data, Mesh& mesh);
+std::vector<Polygon> process_and_cull_geometry(const Mesh& mesh, const SceneData& scene, CullMethod cull_method);
 
 uint32_t light_apply_intensity(uint32_t original_color, float percentage_factor) {
     uint32_t a = (original_color & 0xFF000000);
@@ -115,21 +116,7 @@ void process_input(bool& is_running, SceneData& scene, RenderContext& render_con
     }
 }
 
-void update(EngineCore& engine_core, SceneData& scene, RenderContext& render_context, FrameData& frame_data) {
-    render_context.triangles_to_render.clear();
-
-    uint64_t time_to_wait = frame_data.frame_target_time - (SDL_GetTicks64() - frame_data.previous_frame_time);
-    if (time_to_wait > 0 && time_to_wait <= frame_data.frame_target_time) {
-        SDL_Delay(time_to_wait);
-    }
-    
-    frame_data.delta_time = (SDL_GetTicks64() - frame_data.previous_frame_time) / 1000.0;
-    frame_data.previous_frame_time = SDL_GetTicks64();
-
-    Mesh& mesh = scene.meshes[0];
-
-    mesh.translation.z = 5.0;
-
+void update_camera_and_view(SceneData& scene, FrameData& frame_data) {
     geom::vec3 up = { 0, 1, 0 };
     geom::vec3 target = { 0, 0, 1 };
     geom::mat4 camera_yaw_rotation = geom::mat4_make_rotation_y(scene.camera.yaw);
@@ -138,7 +125,9 @@ void update(EngineCore& engine_core, SceneData& scene, RenderContext& render_con
     target = scene.camera.position + scene.camera.direction;
 
     scene.view_matrix = look_at(scene.camera.position, target, up);
+}
 
+geom::mat4 make_world_matrix(const Mesh& mesh) {
     geom::mat4 scale_matrix = geom::mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
     geom::mat4 translation_matrix = geom::mat4_make_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
     geom::mat4 rotation_matrix_x = geom::mat4_make_rotation_x(mesh.rotation.x);
@@ -146,15 +135,14 @@ void update(EngineCore& engine_core, SceneData& scene, RenderContext& render_con
     geom::mat4 rotation_matrix_z = geom::mat4_make_rotation_z(mesh.rotation.z);
     geom::mat4 rotation_matrix = rotation_matrix_z * rotation_matrix_y * rotation_matrix_x;
 
+    return translation_matrix * rotation_matrix * scale_matrix;
+}
 
-    scene.world_matrix = translation_matrix * rotation_matrix * scale_matrix;
-
-    size_t num_faces = mesh.faces.size();
-    size_t num_vertices = mesh.vertices.size();
-
+std::vector<Polygon> process_and_cull_geometry(const Mesh& mesh, const SceneData& scene, CullMethod cull_method) {
+    std::vector<Polygon> visible_polygon;
     geom::vec3 light_dir = geom::normalize(scene.light_direction * -1.0f);
 
-    for (size_t i = 0; i < num_faces; i++) {
+    for (size_t i = 0; i < mesh.faces.size(); i++) {
 
         Face mesh_face = mesh.faces[i];
 
@@ -173,10 +161,10 @@ void update(EngineCore& engine_core, SceneData& scene, RenderContext& render_con
         // Apply transformations
         for (size_t j = 0; j < 3; j++) {
             geom::vec4 transformed_vertex = geom::vec4_from_vec3(face_vertices[j]);
-            transformed_vertices[j] =  scene.view_matrix * scene.world_matrix * transformed_vertex;
+            transformed_vertices[j] =  scene.view_matrix * make_world_matrix(mesh) * transformed_vertex;
         }
 
-        if (render_context.cull_method == CullMethod::CULL_BACKFACE) {
+        if (cull_method == CullMethod::CULL_BACKFACE) {
 
             // Clockwise
             geom::vec3 vector_a = transformed_vertices[0].xyz(); /*   A   */
@@ -205,21 +193,8 @@ void update(EngineCore& engine_core, SceneData& scene, RenderContext& render_con
 
         float ambient_light = 0.2f;
         float diffuse_light = std::max(0.f, product);
-        float intensity = std::min(1.0f, ambient_light + diffuse_light);
-
-        
-       // Take colors
-        uint32_t a = (mesh_face.color >> 24) & 0xFF;
-        uint32_t r = (mesh_face.color >> 16) & 0xFF;
-        uint32_t g = (mesh_face.color >> 8)  & 0xFF;
-        uint32_t b = mesh_face.color & 0xFF;
-
-        r = (uint32_t)(r * intensity);
-        g = (uint32_t)(g * intensity);
-        b = (uint32_t)(b * intensity);
-
-        uint32_t new_color = (a << 24) | (r << 16) | (g << 8) | b; 
-        mesh_face.color = new_color;
+        float intensity = std::min(1.0f, ambient_light + diffuse_light);       
+        mesh_face.color = light_apply_intensity(mesh_face.color, intensity);
 
         // Create a polygon from the original transformed triangle to be clipped
         Polygon polygon = create_polygon_from_triangle(
@@ -230,50 +205,83 @@ void update(EngineCore& engine_core, SceneData& scene, RenderContext& render_con
                 face_textures[1],
                 face_textures[2]
         );
+        polygon.color = mesh_face.color;
+        visible_polygon.push_back(polygon);
+    }
+    return visible_polygon;
+}
 
-        // Return new polygon with more vertices
+std::vector<Triangle> clip_geometry(std::vector<Polygon>& polygons, const Frustum& frustum) {
+    std::vector<Triangle> clipped_triangles;
+    Triangle triangles_after_clipping[MAX_NUM_POLY_TRIANGLES];
+
+    for (auto& polygon : polygons) {
         clip_polygon(polygon);
-        
-        // Break the clipped polygon apart back into individual triangles
-        Triangle triangles_after_clipping[MAX_NUM_POLY_TRIANGLES];
         int num_triangles_after_clipping = 0;
-        triangles_from_polygon(polygon, triangles_after_clipping, num_triangles_after_clipping); 
-
-        for (int t = 0; t < num_triangles_after_clipping; t++) {
-            Triangle triangle_after_clipping = triangles_after_clipping[t];
-
-            geom::vec4 projected_points[3];
-
-            // Loop all three vertices to perform projection
-            for (size_t j = 0; j < 3; j++) {
-                projected_points[j] = geom::project(render_context.projection_matrix, triangle_after_clipping.points[j]); // NDC all cordinated (-1, 1)
-
-                // 1. SCALE first (stretch -1..1 to -half_width..half_width)
-                projected_points[j].x *= engine_core.window.window_width / 2.0f;
-                projected_points[j].y *= engine_core.window.window_height / 2.0f;
-
-                projected_points[j].y *= -1.f;
-
-                // 2. SHIFT second (move the center from 0 to half_width)
-                projected_points[j].x += engine_core.window.window_width / 2.0f;
-                projected_points[j].y += engine_core.window.window_height / 2.0f;
-            }
-
-            float avg_depth = (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z) / 3.f;
-
-            Triangle triangle_to_render;
-            triangle_to_render.points[0] = { projected_points[0].x, projected_points[0].y, projected_points[0].z, projected_points[0].w };
-            triangle_to_render.points[1] = { projected_points[1].x, projected_points[1].y, projected_points[1].z, projected_points[1].w };
-            triangle_to_render.points[2] = { projected_points[2].x, projected_points[2].y, projected_points[2].z, projected_points[2].w };
-            triangle_to_render.color = mesh_face.color;
-            triangle_to_render.avg_depth = avg_depth;
-            triangle_to_render.texcoords[0] = triangle_after_clipping.texcoords[0];
-            triangle_to_render.texcoords[1] = triangle_after_clipping.texcoords[1];
-            triangle_to_render.texcoords[2] = triangle_after_clipping.texcoords[2];
-
-            render_context.triangles_to_render.push_back(triangle_to_render); 
+        triangles_from_polygon(polygon, triangles_after_clipping, num_triangles_after_clipping);
+        
+        for (int i = 0; i < num_triangles_after_clipping; i++) {
+            clipped_triangles.push_back(triangles_after_clipping[i]);
         }
     }
+    return clipped_triangles;
+}
+
+void project_geometry(std::vector<Triangle>& clipped_triangles, RenderContext& render_context, EngineCore& engine_core) {
+    for (auto& triangle : clipped_triangles) {
+        geom::vec4 projected_points[3];
+
+        float avg_depth = (triangle.points[0].z + triangle.points[1].z + triangle.points[2].z) / 3.0f;
+
+        // Loop all three vertices to perform projection
+        for (size_t j = 0; j < 3; j++) {
+            projected_points[j] = geom::project(render_context.projection_matrix, triangle.points[j]); // NDC all cordinated (-1, 1)
+
+            // 1. SCALE first (stretch -1..1 to -half_width..half_width)
+            projected_points[j].x *= engine_core.window.window_width / 2.0f;
+            projected_points[j].y *= engine_core.window.window_height / 2.0f;
+
+            projected_points[j].y *= -1.f;
+
+            // 2. SHIFT second (move the center from 0 to half_width)
+            projected_points[j].x += engine_core.window.window_width / 2.0f;
+            projected_points[j].y += engine_core.window.window_height / 2.0f;
+        }
+
+        Triangle triangle_to_render;
+        triangle_to_render.points[0] = { projected_points[0].x, projected_points[0].y, projected_points[0].z, projected_points[0].w };
+        triangle_to_render.points[1] = { projected_points[1].x, projected_points[1].y, projected_points[1].z, projected_points[1].w };
+        triangle_to_render.points[2] = { projected_points[2].x, projected_points[2].y, projected_points[2].z, projected_points[2].w };
+
+        triangle_to_render.color = triangle.color;
+        triangle_to_render.avg_depth = avg_depth;
+        triangle_to_render.texcoords[0] = triangle.texcoords[0];
+        triangle_to_render.texcoords[1] = triangle.texcoords[1];
+        triangle_to_render.texcoords[2] = triangle.texcoords[2];
+
+        render_context.triangles_to_render.push_back(triangle_to_render); 
+    }
+}
+
+void update(EngineCore& engine_core, SceneData& scene, RenderContext& render_context, FrameData& frame_data) {
+    render_context.triangles_to_render.clear();
+
+    uint64_t time_to_wait = frame_data.frame_target_time - (SDL_GetTicks64() - frame_data.previous_frame_time);
+    if (time_to_wait > 0 && time_to_wait <= frame_data.frame_target_time) {
+        SDL_Delay(time_to_wait);
+    }
+    
+    frame_data.delta_time = (SDL_GetTicks64() - frame_data.previous_frame_time) / 1000.0;
+    frame_data.previous_frame_time = SDL_GetTicks64();
+
+    update_camera_and_view(scene, frame_data);
+
+    Mesh& mesh = scene.meshes[0];
+    mesh.translation.z = 5.0;   
+
+    std::vector<Polygon> visible_polygons = process_and_cull_geometry(mesh, scene, render_context.cull_method);
+    std::vector<Triangle> clipped_triangles = clip_geometry(visible_polygons, render_context.frustum);
+    project_geometry(clipped_triangles, render_context, engine_core);
 }
 
 void render(EngineCore& engine_core, SceneData& scene, RenderContext& context) {
@@ -351,14 +359,6 @@ void setup(EngineCore& engine_core, SceneData& scene, RenderContext& context) {
     scene.meshes.push_back(load_obj_file_data(OBJ_FILENAME));
     scene.textures.push_back(load_png_texture_data(PNG_FILENAME));
     std::cout << "Vertices:" << scene.meshes[0].vertices.size() << " " << "Faces:" << scene.meshes[0].faces.size() << std::endl;
-}
-
-geom::vec2 project(EngineCore& engine_core, geom::vec3 point, float fov_factor) {
-    if (point.z != 0) {
-        return geom::vec2(point.x * fov_factor / point.z,
-                  point.y * fov_factor / point.z);
-    } 
-    return geom::vec2();
 }
 
 int main(int argc, char* argv[]) {

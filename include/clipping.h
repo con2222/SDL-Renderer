@@ -27,6 +27,7 @@ struct Polygon {
     geom::vec3 vertices[MAX_NUM_POLY_VERTICES];
     geom::vec2 texcoords[MAX_NUM_POLY_VERTICES];
     int num_vertices;
+    uint32_t color;
 };
 
 Frustum create_frustum(float fov_x, float fov_y, float z_near, float z_far);

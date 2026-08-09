@@ -23,7 +23,7 @@ struct Face {
 
 struct Triangle {
     geom::vec4 points[3];
-    Texel texcoords[3];
+    geom::vec2 texcoords[3];
     uint32_t color;
     float avg_depth;
 };

@@ -1,13 +1,12 @@
-#include "configurations.h"
 #include "Geometry.h"
 #include "SDL_keycode.h"
-#include "camera.h"
 #include "mesh.h"
 #include "display.h"
 #include "color.h"
 #include "triangle.h"
 #include "texture.h"
 #include "clipping.h"
+#include "scene.h"
 
 #include <cstdint>
 #include <vector>
@@ -18,21 +17,8 @@ using namespace C2Renderer;
 
 const char* OBJ_FILENAME = "assets/f117.obj";
 const char* PNG_FILENAME = "assets/f117.png"; 
-C2Renderer::RenderMethod render_method;
-C2Renderer::CullMethod cull_method;
-geom::mat4 projection_matrix;
-geom::mat4 world_matrix;
-geom::mat4 view_matrix;
 
 geom::vec2 project(EngineCore& engine_core, geom::vec3 point);
-
-const int FPS = 60;
-const double FRAME_TARGET_TIME = 1000.0 / FPS;
-uint64_t previous_frame_time = 0;
-const float fov_factor = 128;
-geom::vec3 light_direction { 0, 0, 1 }; // like sun light, shine on object
-float delta_time = 0;
-extern Frustum frustum;
 
 std::vector<Triangle> triangles_to_render;
 
@@ -76,7 +62,7 @@ void draw_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int 
 
 }
 
-void process_input(bool& is_running) {
+void process_input(bool& is_running, SceneData& scene, RenderContext& render_context, FrameData& frame_data) {
     SDL_Event event;
 
     while (SDL_PollEvent(&event)) {
@@ -86,14 +72,14 @@ void process_input(bool& is_running) {
                 break;
             case SDL_KEYDOWN:
                 if (event.key.keysym.sym == SDLK_ESCAPE) is_running = false;
-                if (event.key.keysym.sym == SDLK_1) render_method = RenderMethod::RENDER_WIRE_VERTEX;
-                if (event.key.keysym.sym == SDLK_2) render_method = RenderMethod::RENDER_WIRE;
-                if (event.key.keysym.sym == SDLK_3) render_method = RenderMethod::RENDER_FILL_TRIANGLE;
-                if (event.key.keysym.sym == SDLK_4) render_method = RenderMethod::RENDER_FILL_TRIANGLE_WIRE;
-                if (event.key.keysym.sym == SDLK_5) render_method = RenderMethod::RENDER_TEXTURED;
-                if (event.key.keysym.sym == SDLK_6) render_method = RenderMethod::RENDER_TEXTURED_WIRE;
-                if (event.key.keysym.sym == SDLK_c) cull_method = CullMethod::CULL_BACKFACE;
-                if (event.key.keysym.sym == SDLK_x) cull_method = CullMethod::CULL_NONE;
+                if (event.key.keysym.sym == SDLK_1) render_context.render_method = RenderMethod::RENDER_WIRE_VERTEX;
+                if (event.key.keysym.sym == SDLK_2) render_context.render_method = RenderMethod::RENDER_WIRE;
+                if (event.key.keysym.sym == SDLK_3) render_context.render_method = RenderMethod::RENDER_FILL_TRIANGLE;
+                if (event.key.keysym.sym == SDLK_4) render_context.render_method = RenderMethod::RENDER_FILL_TRIANGLE_WIRE;
+                if (event.key.keysym.sym == SDLK_5) render_context.render_method = RenderMethod::RENDER_TEXTURED;
+                if (event.key.keysym.sym == SDLK_6) render_context.render_method = RenderMethod::RENDER_TEXTURED_WIRE;
+                if (event.key.keysym.sym == SDLK_c) render_context.cull_method = CullMethod::CULL_BACKFACE;
+                if (event.key.keysym.sym == SDLK_x) render_context.cull_method = CullMethod::CULL_NONE;
                 break;
             default:
                 break;
@@ -103,43 +89,43 @@ void process_input(bool& is_running) {
     const uint8_t* key_state = SDL_GetKeyboardState(NULL);
 
     if (key_state[SDL_SCANCODE_W]) {
-        camera.forward_velocity = camera.direction * camera.speed * delta_time;
-        camera.position = camera.position + camera.forward_velocity;
+        scene.camera.forward_velocity = scene.camera.direction * scene.camera.speed * frame_data.delta_time;
+        scene.camera.position = scene.camera.position + scene.camera.forward_velocity;
     }
     if (key_state[SDL_SCANCODE_S]) {
-        camera.forward_velocity = camera.direction * camera.speed * delta_time;
-        camera.position = camera.position - camera.forward_velocity;
+        scene.camera.forward_velocity = scene.camera.direction * scene.camera.speed * frame_data.delta_time;
+        scene.camera.position = scene.camera.position - scene.camera.forward_velocity;
     }
     if (key_state[SDL_SCANCODE_LEFT]) {
-        camera.yaw -= 1.5f * delta_time;
+        scene.camera.yaw -= 1.5f * frame_data.delta_time;
     }
     if (key_state[SDL_SCANCODE_RIGHT]) {
-        camera.yaw += 1.5f * delta_time;
+        scene.camera.yaw += 1.5f * frame_data.delta_time;
     }
     if (key_state[SDL_SCANCODE_UP]) {
-        camera.pitch -= 1.5f * delta_time;
+        scene.camera.pitch -= 1.5f * frame_data.delta_time;
     }
     if (key_state[SDL_SCANCODE_DOWN]) {
-        camera.pitch += 1.5f * delta_time;
+        scene.camera.pitch += 1.5f * frame_data.delta_time;
     }
     if (key_state[SDL_SCANCODE_SPACE]) {
-        camera.position.y += camera.up_speed * delta_time;
+        scene.camera.position.y += scene.camera.up_speed * frame_data.delta_time;
     }
     if (key_state[SDL_SCANCODE_RSHIFT] || key_state[SDL_SCANCODE_LSHIFT]) {
-        camera.position.y -= camera.up_speed * delta_time;
+        scene.camera.position.y -= scene.camera.up_speed * frame_data.delta_time;
     }
 }
 
-void update(EngineCore& engine_core) {
+void update(EngineCore& engine_core, SceneData& scene, RenderContext& render_context, FrameData& frame_data) {
     triangles_to_render.clear();
 
-    uint64_t time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks64() - previous_frame_time);
-    if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME) {
+    uint64_t time_to_wait = frame_data.frame_target_time - (SDL_GetTicks64() - frame_data.previous_frame_time);
+    if (time_to_wait > 0 && time_to_wait <= frame_data.frame_target_time) {
         SDL_Delay(time_to_wait);
     }
     
-    delta_time = (SDL_GetTicks64() - previous_frame_time) / 1000.0;
-    previous_frame_time = SDL_GetTicks64();
+    frame_data.delta_time = (SDL_GetTicks64() - frame_data.previous_frame_time) / 1000.0;
+    frame_data.previous_frame_time = SDL_GetTicks64();
 
 
     //mesh.rotation.x += 0.01;
@@ -156,12 +142,12 @@ void update(EngineCore& engine_core) {
 
     geom::vec3 up = { 0, 1, 0 };
     geom::vec3 target = { 0, 0, 1 };
-    geom::mat4 camera_yaw_rotation = geom::mat4_make_rotation_y(camera.yaw);
-    geom::mat4 camera_pitch_rotation = geom::mat4_make_rotation_x(camera.pitch);
-    camera.direction = (camera_pitch_rotation * camera_yaw_rotation * geom::vec4_from_vec3(target)).xyz();
-    target = camera.position + camera.direction;
+    geom::mat4 camera_yaw_rotation = geom::mat4_make_rotation_y(scene.camera.yaw);
+    geom::mat4 camera_pitch_rotation = geom::mat4_make_rotation_x(scene.camera.pitch);
+    scene.camera.direction = (camera_pitch_rotation * camera_yaw_rotation * geom::vec4_from_vec3(target)).xyz();
+    target = scene.camera.position + scene.camera.direction;
 
-    view_matrix = look_at(camera.position, target, up);
+    scene.view_matrix = look_at(scene.camera.position, target, up);
 
     geom::mat4 scale_matrix = geom::mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
     geom::mat4 translation_matrix = geom::mat4_make_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
@@ -171,12 +157,12 @@ void update(EngineCore& engine_core) {
     geom::mat4 rotation_matrix = rotation_matrix_z * rotation_matrix_y * rotation_matrix_x;
 
 
-    world_matrix = translation_matrix * rotation_matrix * scale_matrix;
+    scene.world_matrix = translation_matrix * rotation_matrix * scale_matrix;
 
     size_t num_faces = mesh.faces.size();
     size_t num_vertices = mesh.vertices.size();
 
-    geom::vec3 light_dir = geom::normalize(light_direction * -1.0f);
+    geom::vec3 light_dir = geom::normalize(scene.light_direction * -1.0f);
 
     for (size_t i = 0; i < num_faces; i++) {
 
@@ -197,10 +183,10 @@ void update(EngineCore& engine_core) {
         // Apply transformations
         for (size_t j = 0; j < 3; j++) {
             geom::vec4 transformed_vertex = geom::vec4_from_vec3(face_vertices[j]);
-            transformed_vertices[j] =  view_matrix * world_matrix * transformed_vertex;
+            transformed_vertices[j] =  scene.view_matrix * scene.world_matrix * transformed_vertex;
         }
 
-        if (cull_method == CullMethod::CULL_BACKFACE) {
+        if (render_context.cull_method == CullMethod::CULL_BACKFACE) {
 
             // Clockwise
             geom::vec3 vector_a = transformed_vertices[0].xyz(); /*   A   */
@@ -270,7 +256,7 @@ void update(EngineCore& engine_core) {
 
             // Loop all three vertices to perform projection
             for (size_t j = 0; j < 3; j++) {
-                projected_points[j] = geom::project(projection_matrix, triangle_after_clipping.points[j]); // NDC all cordinated (-1, 1)
+                projected_points[j] = geom::project(render_context.projection_matrix, triangle_after_clipping.points[j]); // NDC all cordinated (-1, 1)
 
                 // 1. SCALE first (stretch -1..1 to -half_width..half_width)
                 projected_points[j].x *= engine_core.window.window_width / 2.0f;
@@ -300,14 +286,14 @@ void update(EngineCore& engine_core) {
     }
 }
 
-void render(EngineCore& engine_core) {
+void render(EngineCore& engine_core, SceneData& scene, RenderContext& context) {
 
     size_t triangles_count = triangles_to_render.size();
 
     for (int i = 0; i < triangles_count; i++) {
         Triangle triangle = triangles_to_render[i];
 
-        if (render_method == RenderMethod::RENDER_FILL_TRIANGLE || render_method == RenderMethod::RENDER_FILL_TRIANGLE_WIRE) {
+        if (context.render_method == RenderMethod::RENDER_FILL_TRIANGLE || context.render_method == RenderMethod::RENDER_FILL_TRIANGLE_WIRE) {
             draw_filled_triangle(engine_core,
                 triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w,
                 triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w,
@@ -316,17 +302,17 @@ void render(EngineCore& engine_core) {
             );
         }
         
-        if (render_method == RenderMethod::RENDER_TEXTURED || render_method == RenderMethod::RENDER_TEXTURED_WIRE) {
+        if (context.render_method == RenderMethod::RENDER_TEXTURED || context.render_method == RenderMethod::RENDER_TEXTURED_WIRE) {
             draw_textured_triangle(engine_core,
-               triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.texcoords[0].u, triangle.texcoords[0].v,
-               triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.texcoords[1].u, triangle.texcoords[1].v,
-               triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.texcoords[2].u, triangle.texcoords[2].v,
+               triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.texcoords[0].x, triangle.texcoords[0].y,
+               triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.texcoords[1].x, triangle.texcoords[1].y,
+               triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.texcoords[2].x, triangle.texcoords[2].y,
                mesh_texture
             );
         }
         
 
-        if (render_method == RenderMethod::RENDER_WIRE || render_method == RenderMethod::RENDER_WIRE_VERTEX || render_method == RenderMethod::RENDER_FILL_TRIANGLE_WIRE || render_method == RenderMethod::RENDER_TEXTURED_WIRE) {
+        if (context.render_method == RenderMethod::RENDER_WIRE || context.render_method == RenderMethod::RENDER_WIRE_VERTEX || context.render_method == RenderMethod::RENDER_FILL_TRIANGLE_WIRE || context.render_method == RenderMethod::RENDER_TEXTURED_WIRE) {
             draw_triangle(engine_core,
                 triangle.points[0].x, triangle.points[0].y,
                 triangle.points[1].x, triangle.points[1].y,
@@ -335,7 +321,7 @@ void render(EngineCore& engine_core) {
             );
         }
 
-        if (render_method == C2Renderer::RenderMethod::RENDER_WIRE_VERTEX) {
+        if (context.render_method == C2Renderer::RenderMethod::RENDER_WIRE_VERTEX) {
             draw_rectangle(engine_core, triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, C2::Color::Red);
             draw_rectangle(engine_core, triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, C2::Color::Red);
             draw_rectangle(engine_core, triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, C2::Color::Red); 
@@ -349,10 +335,10 @@ void render(EngineCore& engine_core) {
     SDL_RenderPresent(engine_core.renderer);
 }
 
-void setup(EngineCore& engine_core) {
-    triangles_to_render.reserve(15000);
-    cull_method = CullMethod::CULL_BACKFACE;
-    render_method = RenderMethod::RENDER_WIRE;
+void setup(EngineCore& engine_core, SceneData& scene, RenderContext& context) {
+    context.triangles_to_render.reserve(15000);
+    context.cull_method = CullMethod::CULL_BACKFACE;
+    context.render_method = RenderMethod::RENDER_WIRE;
     
     engine_core.color_buffer = new uint32_t[engine_core.window.window_width * engine_core.window.window_height]; 
     engine_core.z_buffer = new float[engine_core.window.window_width * engine_core.window.window_height]; 
@@ -369,23 +355,15 @@ void setup(EngineCore& engine_core) {
 
     float znear = 0.1;
     float zfar = 100.0;
-    projection_matrix = geom::mat4_make_perspective(fov_y, aspect_y, znear, zfar);
-    frustum = create_frustum(fov_x, fov_y, znear, zfar);
-
-    // Load hard coded texture
-    /* mesh_texture = (uint32_t*)REDBRICK_TEXTURE;
-    texture_height = 64 C2Core;
-    texture_width = 64; */
-
-    //load_cube_mesh_data();
-
+    context.projection_matrix = geom::mat4_make_perspective(fov_y, aspect_y, znear, zfar);
+    context.frustum = create_frustum(fov_x, fov_y, znear, zfar);
 
     load_obj_file_data(OBJ_FILENAME);
     load_png_texture_data(PNG_FILENAME);
     std::cout << "Vertices:" << mesh.vertices.size() << " " << "Faces:" << mesh.faces.size() << std::endl;
 }
 
-geom::vec2 project(EngineCore& engine_core, geom::vec3 point) {
+geom::vec2 project(EngineCore& engine_core, geom::vec3 point, float fov_factor) {
     if (point.z != 0) {
         return geom::vec2(point.x * fov_factor / point.z,
                   point.y * fov_factor / point.z);
@@ -396,14 +374,17 @@ geom::vec2 project(EngineCore& engine_core, geom::vec3 point) {
 int main(int argc, char* argv[]) {
 
     C2Renderer::EngineCore engine_core;
+    SceneData scene_data;
+    RenderContext render_context;
+    FrameData frame_data;
 
     engine_core.is_running = init_window(engine_core);
-    setup(engine_core);
+    setup(engine_core, scene_data, render_context);
 
     while (engine_core.is_running) {
-        process_input(engine_core.is_running);
-        update(engine_core);
-        render(engine_core);
+        process_input(engine_core.is_running, scene_data, render_context, frame_data);
+        update(engine_core, scene_data, render_context, frame_data);
+        render(engine_core, scene_data, render_context);
     }
     
     destroy_window(engine_core);

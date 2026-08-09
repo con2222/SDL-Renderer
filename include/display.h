@@ -22,6 +22,12 @@ struct EngineCore {
     SDL_Texture* color_buffer_texture = nullptr;
 };
 
+struct FrameData {
+    float delta_time = 0;
+    uint64_t previous_frame_time = 0;
+    const int FPS = 60;
+    const double frame_target_time = 1000.0 / FPS;
+};
 
 
 bool init_window(EngineCore& engineCore);

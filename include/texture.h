@@ -7,9 +7,10 @@ extern "C" {
     #include "upng.h"
 }
 
-struct Texel {
-    float u;
-    float v;
+struct Texture {
+    int width = 0;
+    int height = 0;
+    std::uint32_t* pixels = nullptr;
 };
 
 extern int texture_width;
@@ -19,6 +20,6 @@ extern const uint8_t REDBRICK_TEXTURE[];
 extern upng_t* png_texture;
 extern uint32_t* mesh_texture;
 
-void load_png_texture_data(const char* filename); 
+Texture load_png_texture_data(const char* filename); 
 
 #endif // TEXTURE_H

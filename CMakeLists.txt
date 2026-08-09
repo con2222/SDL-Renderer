@@ -28,6 +28,7 @@ set(SOURCES
     src/triangle.cpp
     src/texture.cpp
     src/camera.cpp
+    src/clipping.cpp
     src/upng.c
 )
 

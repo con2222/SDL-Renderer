@@ -7,6 +7,7 @@
 #include "color.h"
 #include "triangle.h"
 #include "texture.h"
+#include "clipping.h"
 
 #include <cstdint>
 #include <vector>
@@ -15,8 +16,8 @@
 
 using namespace C2Renderer;
 
-const char* OBJ_FILENAME = "assets/f117.obj";
-const char* PNG_FILENAME = "assets/f117.png"; 
+const char* OBJ_FILENAME = "assets/cube.obj";
+const char* PNG_FILENAME = "assets/cube.png"; 
 C2Renderer::RenderMethod render_method;
 C2Renderer::CullMethod cull_method;
 geom::mat4 projection_matrix;
@@ -31,6 +32,7 @@ uint64_t previous_frame_time = 0;
 const float fov_factor = 128;
 geom::vec3 light_direction { 0, 0, 1 }; // like sun light, shine on object
 float delta_time = 0;
+extern Frustum frustum;
 
 std::vector<Triangle> triangles_to_render;
 
@@ -74,69 +76,6 @@ void draw_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int 
 
 }
 
-/*
-void process_input(bool& is_running) {
-    SDL_Event event;
-    SDL_PollEvent(&event);
-
-    switch (event.type) {
-        case SDL_QUIT:
-            is_running = false;
-            break;
-        case SDL_KEYDOWN:
-            if (event.key.keysym.sym == SDLK_ESCAPE) {
-                is_running = false;
-            }
-            if (event.key.keysym.sym == SDLK_1) {
-                render_method = RenderMethod::RENDER_WIRE_VERTEX;
-            }
-            if (event.key.keysym.sym == SDLK_2) {
-                render_method = RenderMethod::RENDER_WIRE;
-            }
-            if (event.key.keysym.sym == SDLK_3) {
-                render_method = RenderMethod::RENDER_FILL_TRIANGLE;
-            }
-            if (event.key.keysym.sym == SDLK_4) {
-                render_method = RenderMethod::RENDER_FILL_TRIANGLE_WIRE;
-            }
-            if (event.key.keysym.sym == SDLK_5) {
-                render_method = RenderMethod::RENDER_TEXTURED;
-            }
-            if (event.key.keysym.sym == SDLK_6) {
-                render_method = RenderMethod::RENDER_TEXTURED_WIRE;
-            }
-            if (event.key.keysym.sym == SDLK_c) {
-                cull_method = CullMethod::CULL_BACKFACE;
-            }
-            if (event.key.keysym.sym == SDLK_x) {
-                cull_method = CullMethod::CULL_NONE;
-            }
-            if (event.key.keysym.sym == SDLK_SPACE) {
-                camera.position.y += camera.speed * delta_time;
-            }
-            if (event.key.keysym.sym == SDLK_LSHIFT) {
-                camera.position.y -= camera.speed * delta_time;
-            }
-            if (event.key.keysym.sym == SDLK_a) {
-                camera.yaw -=  1.0 * delta_time;
-            }
-            if (event.key.keysym.sym == SDLK_d) {
-                camera.yaw +=  1.0 * delta_time;
-            }
-            if (event.key.keysym.sym == SDLK_w) {
-                camera.forward_velocity = camera.direction * camera.speed * delta_time;
-                camera.position = camera.position + camera.forward_velocity;
-            }
-            if (event.key.keysym.sym == SDLK_s) {
-                camera.forward_velocity = camera.direction * camera.speed * delta_time;
-                camera.position = camera.position - camera.forward_velocity;
-            }
-            break;
-        default:
-            break;
-    }
-}*/
-
 void process_input(bool& is_running) {
     SDL_Event event;
 
@@ -172,10 +111,10 @@ void process_input(bool& is_running) {
         camera.position = camera.position - camera.forward_velocity;
     }
     if (key_state[SDL_SCANCODE_A]) {
-        camera.yaw += 1.5f * delta_time;
+        camera.yaw -= 1.5f * delta_time;
     }
     if (key_state[SDL_SCANCODE_D]) {
-        camera.yaw -= 1.5f * delta_time;
+        camera.yaw += 1.5f * delta_time;
     }
     if (key_state[SDL_SCANCODE_SPACE]) {
         camera.position.y += camera.up_speed * delta_time;
@@ -233,6 +172,8 @@ void update(EngineCore& engine_core) {
     geom::vec3 light_dir = geom::normalize(light_direction * -1.0f);
 
     for (size_t i = 0; i < num_faces; i++) {
+        if (i != 4 ) continue;
+
         Face mesh_face = mesh.faces[i];
 
         geom::vec3 face_vertices[3];
@@ -252,12 +193,6 @@ void update(EngineCore& engine_core) {
             geom::vec4 transformed_vertex = geom::vec4_from_vec3(face_vertices[j]);
             transformed_vertices[j] =  view_matrix * world_matrix * transformed_vertex;
         }
-
-        if (transformed_vertices[0].z < 0.1f || 
-            transformed_vertices[1].z < 0.1f || 
-            transformed_vertices[2].z < 0.1f) {
-            continue; 
-        } 
 
         if (cull_method == CullMethod::CULL_BACKFACE) {
 
@@ -304,41 +239,56 @@ void update(EngineCore& engine_core) {
         uint32_t new_color = (a << 24) | (r << 16) | (g << 8) | b; 
         mesh_face.color = new_color;
 
-        geom::vec4 projected_points[3];
+        // Create a polygon from the original transformed triangle to be clipped
+        Polygon polygon = create_polygon_from_triangle(
+                transformed_vertices[0].xyz(), 
+                transformed_vertices[1].xyz(), 
+                transformed_vertices[2].xyz()
+        );
 
-        // Loop all three vertices to perform projection
-        for (size_t j = 0; j < 3; j++) {
-            projected_points[j] = geom::project(projection_matrix, transformed_vertices[j]); // NDC all cordinated (-1, 1)
+        // Return new polygon with more vertices
+        clip_polygon(polygon);
+        
+        // Break the clipped polygon apart back into individual triangles
+        Triangle triangles_after_clipping[MAX_NUM_POLY_TRIANGLES];
+        int num_triangles_after_clipping = 0;
+        triangles_from_polygon(polygon, triangles_after_clipping, num_triangles_after_clipping); 
 
-            // 1. SCALE first (stretch -1..1 to -half_width..half_width)
-            projected_points[j].x *= engine_core.window.window_width / 2.0f;
-            projected_points[j].y *= engine_core.window.window_height / 2.0f;
+        for (int t = 0; t < num_triangles_after_clipping; t++) {
+            Triangle triangle_after_clipping = triangles_after_clipping[t];
 
-            projected_points[j].y *= -1.f;
+            geom::vec4 projected_points[3];
 
-            // 2. SHIFT second (move the center from 0 to half_width)
-            projected_points[j].x += engine_core.window.window_width / 2.0f;
-            projected_points[j].y += engine_core.window.window_height / 2.0f;
+            // Loop all three vertices to perform projection
+            for (size_t j = 0; j < 3; j++) {
+                projected_points[j] = geom::project(projection_matrix, triangle_after_clipping.points[j]); // NDC all cordinated (-1, 1)
+
+                // 1. SCALE first (stretch -1..1 to -half_width..half_width)
+                projected_points[j].x *= engine_core.window.window_width / 2.0f;
+                projected_points[j].y *= engine_core.window.window_height / 2.0f;
+
+                projected_points[j].y *= -1.f;
+
+                // 2. SHIFT second (move the center from 0 to half_width)
+                projected_points[j].x += engine_core.window.window_width / 2.0f;
+                projected_points[j].y += engine_core.window.window_height / 2.0f;
+            }
+
+            float avg_depth = (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z) / 3.f;
+
+            Triangle triangle_to_render;
+            triangle_to_render.points[0] = { projected_points[0].x, projected_points[0].y, projected_points[0].z, projected_points[0].w };
+            triangle_to_render.points[1] = { projected_points[1].x, projected_points[1].y, projected_points[1].z, projected_points[1].w };
+            triangle_to_render.points[2] = { projected_points[2].x, projected_points[2].y, projected_points[2].z, projected_points[2].w };
+            triangle_to_render.color = mesh_face.color;
+            triangle_to_render.avg_depth = avg_depth;
+            triangle_to_render.texcoords[0] = { (float)face_textures[0].x, (float)face_textures[0].y };
+            triangle_to_render.texcoords[1] = { (float)face_textures[1].x, (float)face_textures[1].y };
+            triangle_to_render.texcoords[2] = { (float)face_textures[2].x, (float)face_textures[2].y };
+
+            triangles_to_render.push_back(triangle_to_render); 
         }
-
-        float avg_depth = (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z) / 3.f;
-
-        Triangle projected_triangle;
-        projected_triangle.points[0] = { projected_points[0].x, projected_points[0].y, projected_points[0].z, projected_points[0].w };
-        projected_triangle.points[1] = { projected_points[1].x, projected_points[1].y, projected_points[1].z, projected_points[1].w };
-        projected_triangle.points[2] = { projected_points[2].x, projected_points[2].y, projected_points[2].z, projected_points[2].w };
-        projected_triangle.color = mesh_face.color;
-        projected_triangle.avg_depth = avg_depth;
-        //projected_triangle.texcoords[0] = { mesh_face.a_uv.u, mesh_face.a_uv.v };
-        //projected_triangle.texcoords[1] = { mesh_face.b_uv.u, mesh_face.b_uv.v };
-        //projected_triangle.texcoords[2] = { mesh_face.c_uv.u, mesh_face.c_uv.v };
-        projected_triangle.texcoords[0] = { (float)face_textures[0].x, (float)face_textures[0].y };
-        projected_triangle.texcoords[1] = { (float)face_textures[1].x, (float)face_textures[1].y };
-        projected_triangle.texcoords[2] = { (float)face_textures[2].x, (float)face_textures[2].y };
-
-        triangles_to_render.push_back(projected_triangle); 
     }
-    
 }
 
 void render(EngineCore& engine_core) {
@@ -400,12 +350,19 @@ void setup(EngineCore& engine_core) {
     engine_core.color_buffer_texture = SDL_CreateTexture(engine_core.renderer, SDL_PIXELFORMAT_RGBA32, 
         SDL_TEXTUREACCESS_STREAMING, engine_core.window.window_width, engine_core.window.window_height);
 
-    float fov = M_PI / 3.0; // the same as 180 / 3, or 60 degrees
-    float aspect = engine_core.window.window_height / static_cast<float>(engine_core.window.window_width);
+    float fov_y = M_PI / 3.0; // the same as 180 / 3, or 60 degrees
+    
+
+    float aspect_y = engine_core.window.window_height / static_cast<float>(engine_core.window.window_width);
+    float aspect_x = engine_core.window.window_width / static_cast<float>(engine_core.window.window_height);
+
+    float fov_x = std::atan(std::tan(fov_y / 2) * aspect_x) * 2;
+
     float znear = 0.1;
     float zfar = 100.0;
-    projection_matrix = geom::mat4_make_perspective(fov, aspect, znear, zfar);
-    
+    projection_matrix = geom::mat4_make_perspective(fov_y, aspect_y, znear, zfar);
+    frustum = create_frustum(fov_x, fov_y, znear, zfar);
+
     // Load hard coded texture
     /* mesh_texture = (uint32_t*)REDBRICK_TEXTURE;
     texture_height = 64;

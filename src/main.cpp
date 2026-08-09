@@ -319,13 +319,13 @@ void render(EngineCore& engine_core, SceneData& scene, RenderContext& context) {
         
         if (context.render_method == RenderMethod::RENDER_TEXTURED || context.render_method == RenderMethod::RENDER_TEXTURED_WIRE) {
             if (triangle.texture_index >= 0 && triangle.texture_index < scene.textures.size()) {
-                uint32_t* texture_pixels = scene.textures[triangle.texture_index].pixels;
+                const Texture& current_texture = scene.textures[triangle.texture_index];
                 
                 draw_textured_triangle(engine_core,
                    triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.texcoords[0].x, triangle.texcoords[0].y,
                    triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.texcoords[1].x, triangle.texcoords[1].y,
                    triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.texcoords[2].x, triangle.texcoords[2].y,
-                   texture_pixels
+                   current_texture
                 );
             }       
         }

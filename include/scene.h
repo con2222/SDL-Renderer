@@ -24,7 +24,7 @@ struct RenderContext {
     C2Renderer::RenderMethod render_method;
     C2Renderer::CullMethod cull_method;
 
-    float fov = M_PI / 3;
+    float fov = 128;
     float z_near = 0.1f;
     float z_far = 100.f;
 };

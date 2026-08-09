@@ -14,6 +14,9 @@ geom::vec3 barycentric_weights(geom::vec2 a, geom::vec2 b, geom::vec2 c, geom::v
     geom::vec2 ap = p - a;
 
     float area_parallelogram_abc = (ac.x * ab.y - ac.y * ab.x); // || AC x AB ||
+    if (std::abs(area_parallelogram_abc) < 1e-5f) {
+        return { -1.f, -1.f, -1.f };
+    }
     float alpha = (pc.x * pb.y - pb.x * pc.y) / area_parallelogram_abc;
     float beta = (ac.x * ap.y - ac.y * ap.x) / area_parallelogram_abc;
     float gamma = 1.0 - alpha - beta;
@@ -124,7 +127,7 @@ void draw_textured_triangle(C2Renderer::EngineCore &engine_core,
         int x0, int y0, float z0, float w0, float u0, float v0,
         int x1, int y1, float z1, float w1, float u1, float v1, 
         int x2, int y2, float z2, float w2, float u2, float v2,
-        uint32_t* texture) {
+        const Texture& texture) {
     v0 = 1 - v0;
     v1 = 1 - v1;
     v2 = 1 - v2;
@@ -199,7 +202,7 @@ void draw_textured_triangle(C2Renderer::EngineCore &engine_core,
     }
 }
 
-void draw_texel(C2Renderer::EngineCore& engine_core, int x, int y, uint32_t* texture, geom::vec4 point_a, geom::vec4 point_b, geom::vec4 point_c, float u0, float v0, float u1, float v1, float u2, float v2) {
+void draw_texel(C2Renderer::EngineCore& engine_core, int x, int y, const Texture& texture, geom::vec4 point_a, geom::vec4 point_b, geom::vec4 point_c, float u0, float v0, float u1, float v1, float u2, float v2) {
     
     if (x < 0 || x >= engine_core.window.window_width || y < 0 || y >= engine_core.window.window_height) {
         return;
@@ -211,6 +214,8 @@ void draw_texel(C2Renderer::EngineCore& engine_core, int x, int y, uint32_t* tex
     geom::vec2 c = point_c.xy();
 
     geom::vec3 weights = barycentric_weights(a, b, c, point_p);
+    if (weights.x < 0) return;
+
     float alpha = weights[0];
     float beta = weights[1];
     float gamma = weights[2];
@@ -229,18 +234,18 @@ void draw_texel(C2Renderer::EngineCore& engine_core, int x, int y, uint32_t* tex
     interpolated_u /= interpolated_reciprocal_w;
     interpolated_v /= interpolated_reciprocal_w;
 
-    int tex_x = static_cast<int>(interpolated_u * texture_width) % texture_width;
-    int tex_y = static_cast<int>(interpolated_v * texture_height) % texture_height;
+    int tex_x = static_cast<int>(interpolated_u * texture.width) % texture.width;
+    int tex_y = static_cast<int>(interpolated_v * texture.height) % texture.height;
 
-    if (tex_x < 0) tex_x += texture_width;
-    if (tex_y < 0) tex_y += texture_height; 
+    if (tex_x < 0) tex_x += texture.width;
+    if (tex_y < 0) tex_y += texture.height; 
 
     // Adjust 1/w so the pixels that are closer to the camera have smaller values
     interpolated_reciprocal_w = 1.f - interpolated_reciprocal_w;
     
     // Only draw the pixel if the depth value is less than the one previously stored in the z_buffer
     if (interpolated_reciprocal_w < engine_core.z_buffer[engine_core.window.window_width * y + x]) {
-        C2Renderer::draw_pixel(engine_core, x, y, texture[(texture_width * tex_y) + tex_x]);
+        C2Renderer::draw_pixel(engine_core, x, y, texture.pixels[(texture.width * tex_y) + tex_x]);
         engine_core.z_buffer[engine_core.window.window_width * y + x] = interpolated_reciprocal_w;
     }
 }

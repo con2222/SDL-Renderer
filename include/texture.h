@@ -13,9 +13,6 @@ struct Texture {
     std::uint32_t* pixels = nullptr;
 };
 
-extern int texture_width;
-extern int texture_height;
-
 Texture load_png_texture_data(const char* filename); 
 
 #endif // TEXTURE_H

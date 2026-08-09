@@ -1,15 +1,10 @@
 #include "texture.h"
+#include <cstring>
 
 
 extern "C" {
     #include "upng.h"
 }
-
-int texture_width = 64;
-int texture_height = 64;
-
-upng_t* png_texture = nullptr;
-uint32_t* mesh_texture = nullptr;
 
 Texture load_png_texture_data(const char* filename) {
     Texture texture;
@@ -17,9 +12,12 @@ Texture load_png_texture_data(const char* filename) {
     if (png_texture != nullptr) {
         upng_decode(png_texture);
         if (upng_get_error(png_texture) == UPNG_EOK) {
-            texture.pixels = (uint32_t*)upng_get_buffer(png_texture);
             texture.width = upng_get_width(png_texture);
             texture.height = upng_get_height(png_texture);
+        
+            int texture_size = upng_get_size(png_texture);
+            texture.pixels = new uint32_t[texture_size / sizeof(uint32_t)];
+            std::memcpy(texture.pixels, upng_get_buffer(png_texture), texture_size);
         }
     }
     upng_free(png_texture);

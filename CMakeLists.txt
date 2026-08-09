@@ -21,6 +21,8 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(SDL2)
 
+add_subdirectory(vendor/c2-core-lib)
+
 set(SOURCES 
     src/main.cpp
     src/display.cpp
@@ -36,4 +38,4 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE include/)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2-static SDL2::SDL2main)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2-static SDL2::SDL2main C2Core)

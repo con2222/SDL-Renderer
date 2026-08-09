@@ -1,4 +1,4 @@
-#include "Configurations.h"
+#include "configurations.h"
 #include "Geometry.h"
 #include "SDL_keycode.h"
 #include "camera.h"

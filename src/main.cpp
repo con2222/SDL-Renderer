@@ -125,6 +125,8 @@ void process_input(bool& is_running, SceneData& scene, RenderContext& render_con
     if (key_state[SDL_SCANCODE_RSHIFT] || key_state[SDL_SCANCODE_LSHIFT]) {
         scene.camera.position.y -= scene.camera.up_speed * frame_data.delta_time;
     }
+
+    scene.camera.pitch = std::clamp(scene.camera.pitch, -1.55f, 1.55f);
 }
 
 void update_camera_and_view(SceneData& scene, FrameData& frame_data) {

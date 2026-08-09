@@ -67,11 +67,11 @@ void draw_filled_triangle(C2Renderer::EngineCore& engine_core,
         for (int y = y0; y < y1; y++) {
             int dy = y - y0;
 
-            int x_start = x0 + dy * inv_slope1;
-            int x_end = x0 + dy * inv_slope2;
+            int x_start = geom::round_float_to_int(x0 + dy * inv_slope1);
+            int x_end = geom::round_float_to_int(x0 + dy * inv_slope2);
             if (x_start > x_end) std::swap(x_start, x_end);
 
-            for (int x = x_start; x < x_end; x++) {
+            for (int x = x_start; x <= x_end; x++) {
                 if (x < 0 || x >= engine_core.window.window_width || y < 0 || y >= engine_core.window.window_height) {
                     continue;
                 }
@@ -96,12 +96,12 @@ void draw_filled_triangle(C2Renderer::EngineCore& engine_core,
         if (y2 - y1 != 0) inv_slope1 = (x2 - x1) / static_cast<float>(abs(y2 - y1));
 
         for (int y = y1; y < y2; y++) {
-            int x_start = x1 + (y - y1) * inv_slope1;
-            int x_end = x0 + (y - y0) * inv_slope2;
+            int x_start = geom::round_float_to_int(x1 + (y - y1) * inv_slope1);
+            int x_end = geom::round_float_to_int(x0 + (y - y0) * inv_slope2);
             
             if (x_start > x_end) std::swap(x_start, x_end);
 
-            for (int x = x_start; x < x_end; x++) {
+            for (int x = x_start; x <= x_end; x++) {
                 if (x < 0 || x >= engine_core.window.window_width || y < 0 || y >= engine_core.window.window_height) {
                     continue;
                 }
@@ -179,7 +179,7 @@ void draw_textured_triangle(C2Renderer::EngineCore &engine_core,
         
             if (x_start > x_end) std::swap(x_start, x_end);
 
-            for (int x = x_start; x < x_end; x++) {
+            for (int x = x_start; x <= x_end; x++) {
                 draw_texel(engine_core, x, y, texture, point_a, point_b, point_c, u0, v0, u1, v1, u2, v2);
             }
         }
@@ -195,7 +195,7 @@ void draw_textured_triangle(C2Renderer::EngineCore &engine_core,
             
             if (x_start > x_end) std::swap(x_start, x_end);
 
-            for (int x = x_start; x < x_end; x++) {
+            for (int x = x_start; x <= x_end; x++) {
                 draw_texel(engine_core, x, y, texture, point_a, point_b, point_c, u0, v0, u1, v1, u2, v2);
             }
         }

@@ -41,18 +41,14 @@ void render_color_buffer(EngineCore& engine_core) {
 }
 
 void clear_color_buffer(EngineCore& engine_core, uint32_t color) {
-    for (int y = 0; y < engine_core.window.window_height; y++) {
-        for (int x = 0; x < engine_core.window.window_width; x++) {
-            engine_core.color_buffer[y * engine_core.window.window_width + x] = color;
-        }
+    for (int i = 0; i < engine_core.window.window_width * engine_core.window.window_height; i++) {
+        engine_core.color_buffer[i] = color;
     }
 }
 
 void clear_z_buffer(EngineCore& engine_core) {
-    for (int y = 0; y < engine_core.window.window_height; y++) {
-        for (int x = 0; x < engine_core.window.window_width; x++) {
-            engine_core.z_buffer[y * engine_core.window.window_width + x] = 1.f;
-        }
+    for (int i = 0; i < engine_core.window.window_width * engine_core.window.window_height; i++) {
+        engine_core.z_buffer[i] = 1.f;
     }
 }
 

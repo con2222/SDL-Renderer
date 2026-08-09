@@ -12,11 +12,15 @@ bool init_window(EngineCore& engine_core) {
 
     SDL_DisplayMode display_mode;
     SDL_GetCurrentDisplayMode(0, &display_mode);
-    engine_core.window.window_width = display_mode.w;
-    engine_core.window.window_height = display_mode.h;
+    
+    int fullscreen_width = display_mode.w;
+    int fullscreen_height = display_mode.h;
+
+    engine_core.window.window_width = fullscreen_width / 3;
+    engine_core.window.window_height = fullscreen_height / 3;
 
     engine_core.window.SDL_window = SDL_CreateWindow(nullptr, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
-        engine_core.window.window_width, engine_core.window.window_height, SDL_WINDOW_BORDERLESS);
+        fullscreen_width, fullscreen_height, SDL_WINDOW_BORDERLESS);
 
     if (!engine_core.window.SDL_window) {
         std::cerr << "Error creating SDL window\n" << std::endl;

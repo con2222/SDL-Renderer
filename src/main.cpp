@@ -110,11 +110,17 @@ void process_input(bool& is_running) {
         camera.forward_velocity = camera.direction * camera.speed * delta_time;
         camera.position = camera.position - camera.forward_velocity;
     }
-    if (key_state[SDL_SCANCODE_A]) {
+    if (key_state[SDL_SCANCODE_LEFT]) {
         camera.yaw -= 1.5f * delta_time;
     }
-    if (key_state[SDL_SCANCODE_D]) {
+    if (key_state[SDL_SCANCODE_RIGHT]) {
         camera.yaw += 1.5f * delta_time;
+    }
+    if (key_state[SDL_SCANCODE_UP]) {
+        camera.pitch -= 1.5f * delta_time;
+    }
+    if (key_state[SDL_SCANCODE_DOWN]) {
+        camera.pitch += 1.5f * delta_time;
     }
     if (key_state[SDL_SCANCODE_SPACE]) {
         camera.position.y += camera.up_speed * delta_time;
@@ -151,7 +157,8 @@ void update(EngineCore& engine_core) {
     geom::vec3 up = { 0, 1, 0 };
     geom::vec3 target = { 0, 0, 1 };
     geom::mat4 camera_yaw_rotation = geom::mat4_make_rotation_y(camera.yaw);
-    camera.direction = (camera_yaw_rotation * geom::vec4_from_vec3(target)).xyz();
+    geom::mat4 camera_pitch_rotation = geom::mat4_make_rotation_x(camera.pitch);
+    camera.direction = (camera_pitch_rotation * camera_yaw_rotation * geom::vec4_from_vec3(target)).xyz();
     target = camera.position + camera.direction;
 
     view_matrix = look_at(camera.position, target, up);
@@ -367,7 +374,7 @@ void setup(EngineCore& engine_core) {
 
     // Load hard coded texture
     /* mesh_texture = (uint32_t*)REDBRICK_TEXTURE;
-    texture_height = 64;
+    texture_height = 64 C2Core;
     texture_width = 64; */
 
     //load_cube_mesh_data();

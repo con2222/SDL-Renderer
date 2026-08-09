@@ -5,6 +5,7 @@ Camera camera = {
     .direction = { 0, 0, 1 },
     .forward_velocity = { 0, 0, 0 },
     .yaw = 0.0,
+    .pitch = 0.0,
     .speed = 5.f,
     .up_speed = 3.f
 };

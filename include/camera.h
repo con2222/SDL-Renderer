@@ -11,6 +11,7 @@ struct Camera {
     vec3 direction;
     vec3 forward_velocity;
     float yaw;
+    float pitch;
     float speed;
     float up_speed;
 };

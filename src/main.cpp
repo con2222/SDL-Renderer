@@ -16,8 +16,8 @@
 
 using namespace C2Renderer;
 
-const char* OBJ_FILENAME = "assets/cube.obj";
-const char* PNG_FILENAME = "assets/cube.png"; 
+const char* OBJ_FILENAME = "assets/f117.obj";
+const char* PNG_FILENAME = "assets/f117.png"; 
 C2Renderer::RenderMethod render_method;
 C2Renderer::CullMethod cull_method;
 geom::mat4 projection_matrix;
@@ -172,7 +172,6 @@ void update(EngineCore& engine_core) {
     geom::vec3 light_dir = geom::normalize(light_direction * -1.0f);
 
     for (size_t i = 0; i < num_faces; i++) {
-        if (i != 4 ) continue;
 
         Face mesh_face = mesh.faces[i];
 
@@ -243,7 +242,10 @@ void update(EngineCore& engine_core) {
         Polygon polygon = create_polygon_from_triangle(
                 transformed_vertices[0].xyz(), 
                 transformed_vertices[1].xyz(), 
-                transformed_vertices[2].xyz()
+                transformed_vertices[2].xyz(),
+                face_textures[0],
+                face_textures[1],
+                face_textures[2]
         );
 
         // Return new polygon with more vertices
@@ -282,9 +284,9 @@ void update(EngineCore& engine_core) {
             triangle_to_render.points[2] = { projected_points[2].x, projected_points[2].y, projected_points[2].z, projected_points[2].w };
             triangle_to_render.color = mesh_face.color;
             triangle_to_render.avg_depth = avg_depth;
-            triangle_to_render.texcoords[0] = { (float)face_textures[0].x, (float)face_textures[0].y };
-            triangle_to_render.texcoords[1] = { (float)face_textures[1].x, (float)face_textures[1].y };
-            triangle_to_render.texcoords[2] = { (float)face_textures[2].x, (float)face_textures[2].y };
+            triangle_to_render.texcoords[0] = triangle_after_clipping.texcoords[0];
+            triangle_to_render.texcoords[1] = triangle_after_clipping.texcoords[1];
+            triangle_to_render.texcoords[2] = triangle_after_clipping.texcoords[2];
 
             triangles_to_render.push_back(triangle_to_render); 
         }

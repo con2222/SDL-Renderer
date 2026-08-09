@@ -18,9 +18,6 @@ struct Face {
     int b_t;
     int c_t;
 
-    Texel a_uv;
-    Texel b_uv;
-    Texel c_uv;
     uint32_t color;
 };
 

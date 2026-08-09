@@ -406,6 +406,7 @@ namespace geom {
         m[2][2] = zfar / (zfar - znear);
         m[2][3] = (-zfar * znear) / (zfar - znear);
         m[3][2] = 1.f;
+        m[3][3] = 0.f;
         return m;
     }
 

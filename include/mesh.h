@@ -24,7 +24,6 @@ struct Mesh {
 
 extern Mesh mesh;
 
-void load_cube_mesh_data();
 void load_obj_file_data(const char* filename);
 
 

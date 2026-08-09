@@ -3,6 +3,7 @@
 
 #include "Geometry.h"
 
+
 constexpr int MAX_NUM_POLY_VERTICES = 100;
 constexpr int MAX_NUM_POLY_TRIANGLES = 98; // max - 2
 
@@ -24,11 +25,13 @@ struct Frustum {
 
 struct Polygon {
     geom::vec3 vertices[MAX_NUM_POLY_VERTICES];
+    geom::vec2 texcoords[MAX_NUM_POLY_VERTICES];
     int num_vertices;
 };
 
 Frustum create_frustum(float fov_x, float fov_y, float z_near, float z_far);
-Polygon create_polygon_from_triangle(geom::vec3 v0, geom::vec3 v1, geom::vec3 v2);
+Polygon create_polygon_from_triangle(geom::vec3 v0, geom::vec3 v1, geom::vec3 v2, geom::vec2 t0, geom::vec2 t1, geom::vec2 t2);
+float float_lerp(float a, float b, float t);
 void clip_polygon(Polygon& polygon);
 void clip_polygon_againts_plain(Polygon& polygon, const Plane& plane);
 void triangles_from_polygon(Polygon& polygon, Triangle triangles[], int& num_triangles);

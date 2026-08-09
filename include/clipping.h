@@ -28,6 +28,8 @@ struct Polygon {
     geom::vec2 texcoords[MAX_NUM_POLY_VERTICES];
     int num_vertices;
     uint32_t color;
+
+    int texture_index = -1;
 };
 
 Frustum create_frustum(float fov_x, float fov_y, float z_near, float z_far);

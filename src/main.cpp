@@ -26,6 +26,17 @@ void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1, uint
 void update_scene_matrices(SceneData& scene, FrameData& frame_data, Mesh& mesh);
 std::vector<Polygon> process_and_cull_geometry(const Mesh& mesh, const SceneData& scene, CullMethod cull_method);
 
+void load_entity(SceneData& scene, const char* obj_filename, const char* png_filename, geom::vec3 translation = { 0.f, 0.f, 0.f }, geom::vec3 rotation = {0.f, 0.f, 0.f}, geom::vec3 scale = { 1.f, 1.f, 1.f }) {
+    Texture tex = load_png_texture_data(png_filename);
+    int tex_index = scene.textures.size();
+    scene.textures.push_back(tex);
+
+    Mesh mesh = load_obj_file_data(obj_filename, translation, rotation, scale);
+    mesh.texture_index = tex_index;
+    
+    scene.meshes.push_back(mesh);
+}
+
 uint32_t light_apply_intensity(uint32_t original_color, float percentage_factor) {
     uint32_t a = (original_color & 0xFF000000);
     uint32_t r = (original_color & 0x00FF0000) * percentage_factor;
@@ -206,6 +217,7 @@ std::vector<Polygon> process_and_cull_geometry(const Mesh& mesh, const SceneData
                 face_textures[2]
         );
         polygon.color = mesh_face.color;
+        polygon.texture_index = mesh.texture_index;
         visible_polygon.push_back(polygon);
     }
     return visible_polygon;
@@ -221,6 +233,8 @@ std::vector<Triangle> clip_geometry(std::vector<Polygon>& polygons, const Frustu
         triangles_from_polygon(polygon, triangles_after_clipping, num_triangles_after_clipping);
         
         for (int i = 0; i < num_triangles_after_clipping; i++) {
+            triangles_after_clipping[i].color = polygon.color;
+            triangles_after_clipping[i].texture_index = polygon.texture_index;
             clipped_triangles.push_back(triangles_after_clipping[i]);
         }
     }
@@ -258,7 +272,7 @@ void project_geometry(std::vector<Triangle>& clipped_triangles, RenderContext& r
         triangle_to_render.texcoords[0] = triangle.texcoords[0];
         triangle_to_render.texcoords[1] = triangle.texcoords[1];
         triangle_to_render.texcoords[2] = triangle.texcoords[2];
-
+        triangle_to_render.texture_index = triangle.texture_index;
         render_context.triangles_to_render.push_back(triangle_to_render); 
     }
 }
@@ -276,11 +290,14 @@ void update(EngineCore& engine_core, SceneData& scene, RenderContext& render_con
 
     update_camera_and_view(scene, frame_data);
 
-    Mesh& mesh = scene.meshes[0];
-    mesh.translation.z = 5.0;   
+    std::vector<Polygon> all_visible_polygons;
 
-    std::vector<Polygon> visible_polygons = process_and_cull_geometry(mesh, scene, render_context.cull_method);
-    std::vector<Triangle> clipped_triangles = clip_geometry(visible_polygons, render_context.frustum);
+    for (auto& mesh : scene.meshes) {
+        std::vector<Polygon> mesh_polygons = process_and_cull_geometry(mesh, scene, render_context.cull_method);
+        all_visible_polygons.insert(all_visible_polygons.end(), mesh_polygons.begin(), mesh_polygons.end());
+    }
+
+    std::vector<Triangle> clipped_triangles = clip_geometry(all_visible_polygons, render_context.frustum);
     project_geometry(clipped_triangles, render_context, engine_core);
 }
 
@@ -301,12 +318,16 @@ void render(EngineCore& engine_core, SceneData& scene, RenderContext& context) {
         }
         
         if (context.render_method == RenderMethod::RENDER_TEXTURED || context.render_method == RenderMethod::RENDER_TEXTURED_WIRE) {
-            draw_textured_triangle(engine_core,
-               triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.texcoords[0].x, triangle.texcoords[0].y,
-               triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.texcoords[1].x, triangle.texcoords[1].y,
-               triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.texcoords[2].x, triangle.texcoords[2].y,
-               scene.textures[0].pixels
-            );
+            if (triangle.texture_index >= 0 && triangle.texture_index < scene.textures.size()) {
+                uint32_t* texture_pixels = scene.textures[triangle.texture_index].pixels;
+                
+                draw_textured_triangle(engine_core,
+                   triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.texcoords[0].x, triangle.texcoords[0].y,
+                   triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.texcoords[1].x, triangle.texcoords[1].y,
+                   triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.texcoords[2].x, triangle.texcoords[2].y,
+                   texture_pixels
+                );
+            }       
         }
         
 
@@ -356,8 +377,8 @@ void setup(EngineCore& engine_core, SceneData& scene, RenderContext& context) {
     context.projection_matrix = geom::mat4_make_perspective(fov_y, aspect_y, znear, zfar);
     context.frustum = create_frustum(fov_x, fov_y, znear, zfar);
 
-    scene.meshes.push_back(load_obj_file_data(OBJ_FILENAME));
-    scene.textures.push_back(load_png_texture_data(PNG_FILENAME));
+    load_entity(scene, "assets/f117.obj", "assets/f117.png", {0.f, 0.f, 5.f});
+    load_entity(scene, "assets/cube.obj", "assets/cube.png", {-3.f, 0.f, 8.f});
     std::cout << "Vertices:" << scene.meshes[0].vertices.size() << " " << "Faces:" << scene.meshes[0].faces.size() << std::endl;
 }
 

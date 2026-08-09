@@ -20,10 +20,15 @@ struct Mesh {
     geom::vec3 rotation; // rotation with x, y, and z values
     geom::vec3 scale = { 1.0, 1.0, 1.0 }; // scale with x, y and z values
     geom::vec3 translation; // translation with x, y and z values
+
+    int texture_index = -1;
 };
 
 
-Mesh load_obj_file_data(const char* filename);
-
+Mesh load_obj_file_data(const char* filename, 
+        geom::vec3 translation = { 0.f, 0.f, 0.f }, 
+        geom::vec3 rotation = { 0.f, 0.f, 0.f }, 
+        geom::vec3 scale = { 1.f, 1.f, 1.f }
+);
 
 #endif

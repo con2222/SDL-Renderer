@@ -9,8 +9,16 @@
 // TODO: Create implementation for mesh.h functions
 
 
-Mesh load_obj_file_data(const char* filename) {
+Mesh load_obj_file_data(const char* filename, 
+        geom::vec3 translation, 
+        geom::vec3 rotation,
+        geom::vec3 scale
+) 
+{
     Mesh mesh;
+    mesh.translation = translation;
+    mesh.rotation = rotation;
+    mesh.scale = scale;
 
     std::ifstream in(filename);
     std::string line;

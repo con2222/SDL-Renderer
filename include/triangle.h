@@ -26,6 +26,7 @@ struct Triangle {
     geom::vec2 texcoords[3];
     uint32_t color;
     float avg_depth;
+    int texture_index = -1;
 };
 
 geom::vec3 barycentric_weights(geom::vec2 a, geom::vec2 b, geom::vec2 c, geom::vec2 p);

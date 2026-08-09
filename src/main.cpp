@@ -20,7 +20,6 @@ const char* PNG_FILENAME = "assets/f117.png";
 
 geom::vec2 project(EngineCore& engine_core, geom::vec3 point);
 
-std::vector<Triangle> triangles_to_render;
 
 void draw_filled_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
 void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1, uint32_t color);
@@ -117,7 +116,7 @@ void process_input(bool& is_running, SceneData& scene, RenderContext& render_con
 }
 
 void update(EngineCore& engine_core, SceneData& scene, RenderContext& render_context, FrameData& frame_data) {
-    triangles_to_render.clear();
+    render_context.triangles_to_render.clear();
 
     uint64_t time_to_wait = frame_data.frame_target_time - (SDL_GetTicks64() - frame_data.previous_frame_time);
     if (time_to_wait > 0 && time_to_wait <= frame_data.frame_target_time) {
@@ -127,17 +126,8 @@ void update(EngineCore& engine_core, SceneData& scene, RenderContext& render_con
     frame_data.delta_time = (SDL_GetTicks64() - frame_data.previous_frame_time) / 1000.0;
     frame_data.previous_frame_time = SDL_GetTicks64();
 
+    Mesh& mesh = scene.meshes[0];
 
-    //mesh.rotation.x += 0.01;
-    // mesh.rotation.y += 0.01;
-    // mesh.rotation.z += 0.01;
-    
-    /*
-    mesh.scale.x += 0.5;
-    mesh.scale.y = 0.5;*/
-    
-    
-    // mesh.translation.x += 0.01;
     mesh.translation.z = 5.0;
 
     geom::vec3 up = { 0, 1, 0 };
@@ -281,17 +271,17 @@ void update(EngineCore& engine_core, SceneData& scene, RenderContext& render_con
             triangle_to_render.texcoords[1] = triangle_after_clipping.texcoords[1];
             triangle_to_render.texcoords[2] = triangle_after_clipping.texcoords[2];
 
-            triangles_to_render.push_back(triangle_to_render); 
+            render_context.triangles_to_render.push_back(triangle_to_render); 
         }
     }
 }
 
 void render(EngineCore& engine_core, SceneData& scene, RenderContext& context) {
 
-    size_t triangles_count = triangles_to_render.size();
+    size_t triangles_count = context.triangles_to_render.size();
 
     for (int i = 0; i < triangles_count; i++) {
-        Triangle triangle = triangles_to_render[i];
+        Triangle triangle = context.triangles_to_render[i];
 
         if (context.render_method == RenderMethod::RENDER_FILL_TRIANGLE || context.render_method == RenderMethod::RENDER_FILL_TRIANGLE_WIRE) {
             draw_filled_triangle(engine_core,
@@ -307,7 +297,7 @@ void render(EngineCore& engine_core, SceneData& scene, RenderContext& context) {
                triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.texcoords[0].x, triangle.texcoords[0].y,
                triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.texcoords[1].x, triangle.texcoords[1].y,
                triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.texcoords[2].x, triangle.texcoords[2].y,
-               mesh_texture
+               scene.textures[0].pixels
             );
         }
         
@@ -358,9 +348,9 @@ void setup(EngineCore& engine_core, SceneData& scene, RenderContext& context) {
     context.projection_matrix = geom::mat4_make_perspective(fov_y, aspect_y, znear, zfar);
     context.frustum = create_frustum(fov_x, fov_y, znear, zfar);
 
-    load_obj_file_data(OBJ_FILENAME);
-    load_png_texture_data(PNG_FILENAME);
-    std::cout << "Vertices:" << mesh.vertices.size() << " " << "Faces:" << mesh.faces.size() << std::endl;
+    scene.meshes.push_back(load_obj_file_data(OBJ_FILENAME));
+    scene.textures.push_back(load_png_texture_data(PNG_FILENAME));
+    std::cout << "Vertices:" << scene.meshes[0].vertices.size() << " " << "Faces:" << scene.meshes[0].faces.size() << std::endl;
 }
 
 geom::vec2 project(EngineCore& engine_core, geom::vec3 point, float fov_factor) {
@@ -388,7 +378,6 @@ int main(int argc, char* argv[]) {
     }
     
     destroy_window(engine_core);
-    upng_free(png_texture);
 
     return 0;
 }

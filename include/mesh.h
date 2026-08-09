@@ -22,9 +22,8 @@ struct Mesh {
     geom::vec3 translation; // translation with x, y and z values
 };
 
-extern Mesh mesh;
 
-void load_obj_file_data(const char* filename);
+Mesh load_obj_file_data(const char* filename);
 
 
 #endif

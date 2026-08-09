@@ -8,9 +8,10 @@
 
 // TODO: Create implementation for mesh.h functions
 
-Mesh mesh = {};
 
-void load_obj_file_data(const char* filename) {
+Mesh load_obj_file_data(const char* filename) {
+    Mesh mesh;
+
     std::ifstream in(filename);
     std::string line;
     std::string digits = "-0123456789";
@@ -75,4 +76,6 @@ void load_obj_file_data(const char* filename) {
             }
         }
     }
+
+    return mesh;
 }

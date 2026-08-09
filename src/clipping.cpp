@@ -3,7 +3,6 @@
 #include "Geometry.h"
 #include "triangle.h"
 
-Frustum frustum;
 
 Frustum create_frustum(float fov_x, float fov_y, float z_near, float z_far) {
         Frustum f;
@@ -57,7 +56,11 @@ Polygon create_polygon_from_triangle(geom::vec3 v0, geom::vec3 v1, geom::vec3 v2
     return polygon;
 }
 
-void clip_polygon_againts_plain(Polygon& polygon, const Plane& plane) {
+void clip_polygon_againts_plain(Polygon& polygon, const Plane& plane, Frustum frustum) {
+    if (polygon.num_vertices == 0) {
+        return;
+    }
+
     geom::vec3 plane_point = plane.point;
     geom::vec3 plane_normal = plane.normal;
     
@@ -88,7 +91,7 @@ void clip_polygon_againts_plain(Polygon& polygon, const Plane& plane) {
             inside_texcoords[num_inside_vertices] = intersection_texcoord;
             num_inside_vertices++;
         }
-        if (current_dot >= 0) {
+        if (current_dot > 0) {
             inside_vertices[num_inside_vertices] = *current_vertex;
             inside_texcoords[num_inside_vertices] = *current_texcoord;
             num_inside_vertices++;
@@ -107,13 +110,13 @@ void clip_polygon_againts_plain(Polygon& polygon, const Plane& plane) {
     polygon.num_vertices = num_inside_vertices;
 }
 
-void clip_polygon(Polygon& polygon) {
-    clip_polygon_againts_plain(polygon, frustum.left);
-    clip_polygon_againts_plain(polygon, frustum.right);
-    clip_polygon_againts_plain(polygon, frustum.top);
-    clip_polygon_againts_plain(polygon, frustum.bottom); 
-    clip_polygon_againts_plain(polygon, frustum.near);
-    clip_polygon_againts_plain(polygon, frustum.far);
+void clip_polygon(Polygon& polygon, Frustum frustum) {
+    clip_polygon_againts_plain(polygon, frustum.left, frustum);
+    clip_polygon_againts_plain(polygon, frustum.right, frustum);
+    clip_polygon_againts_plain(polygon, frustum.top, frustum);
+    clip_polygon_againts_plain(polygon, frustum.bottom, frustum); 
+    clip_polygon_againts_plain(polygon, frustum.near, frustum);
+    clip_polygon_againts_plain(polygon, frustum.far, frustum);
 }
 
 void triangles_from_polygon(Polygon& polygon, Triangle triangles[], int& num_triangles) {

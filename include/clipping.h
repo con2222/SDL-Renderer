@@ -35,8 +35,8 @@ struct Polygon {
 Frustum create_frustum(float fov_x, float fov_y, float z_near, float z_far);
 Polygon create_polygon_from_triangle(geom::vec3 v0, geom::vec3 v1, geom::vec3 v2, geom::vec2 t0, geom::vec2 t1, geom::vec2 t2);
 float float_lerp(float a, float b, float t);
-void clip_polygon(Polygon& polygon);
-void clip_polygon_againts_plain(Polygon& polygon, const Plane& plane);
+void clip_polygon(Polygon& polygon, Frustum frustum);
+void clip_polygon_againts_plain(Polygon& polygon, const Plane& plane, Frustum frustum);
 void triangles_from_polygon(Polygon& polygon, Triangle triangles[], int& num_triangles);
 
 #endif // CLIPPING_H

@@ -220,32 +220,28 @@ void draw_texel(C2Renderer::EngineCore& engine_core, int x, int y, const Texture
     float beta = weights[1];
     float gamma = weights[2];
 
-    float interpolated_u;
-    float interpolated_v;
-    float interpolated_reciprocal_w;
+    float interpolated_reciprocal_w = (1/point_a.w) * alpha + (1/point_b.w) * beta + (1/point_c.w) * gamma;
+    interpolated_reciprocal_w = 1.f - interpolated_reciprocal_w; 
 
-    // Perform the interpolate of all U/w and V/w values using barycentric weights and a factor of 1/w
-    interpolated_u = (u0 / point_a.w) * alpha + (u1 / point_b.w) * beta + (u2 / point_c.w) * gamma;
-    interpolated_v = (v0 / point_a.w) * alpha + (v1 / point_b.w) * beta + (v2 / point_c.w) * gamma;
+    int buffer_index = engine_core.window.window_width * y + x;
+    if (interpolated_reciprocal_w >= engine_core.z_buffer[buffer_index]) {
+        return; 
+    }
 
-    interpolated_reciprocal_w = (1/point_a.w) * alpha + (1/point_b.w) * beta + (1/point_c.w) * gamma;
+    engine_core.z_buffer[buffer_index] = interpolated_reciprocal_w;
 
-    // Divide back both interpolated values
-    interpolated_u /= interpolated_reciprocal_w;
-    interpolated_v /= interpolated_reciprocal_w;
+    // 4. Считаем текстурные координаты
+    float interpolated_u = (u0 / point_a.w) * alpha + (u1 / point_b.w) * beta + (u2 / point_c.w) * gamma;
+    float interpolated_v = (v0 / point_a.w) * alpha + (v1 / point_b.w) * beta + (v2 / point_c.w) * gamma;
+
+    interpolated_u /= (1.f - interpolated_reciprocal_w);
+    interpolated_v /= (1.f - interpolated_reciprocal_w);
 
     int tex_x = static_cast<int>(interpolated_u * texture.width) % texture.width;
     int tex_y = static_cast<int>(interpolated_v * texture.height) % texture.height;
-
     if (tex_x < 0) tex_x += texture.width;
     if (tex_y < 0) tex_y += texture.height; 
 
-    // Adjust 1/w so the pixels that are closer to the camera have smaller values
-    interpolated_reciprocal_w = 1.f - interpolated_reciprocal_w;
-    
-    // Only draw the pixel if the depth value is less than the one previously stored in the z_buffer
-    if (interpolated_reciprocal_w < engine_core.z_buffer[engine_core.window.window_width * y + x]) {
-        C2Renderer::draw_pixel(engine_core, x, y, texture.pixels[(texture.width * tex_y) + tex_x]);
-        engine_core.z_buffer[engine_core.window.window_width * y + x] = interpolated_reciprocal_w;
-    }
+    uint32_t texel_color = texture.pixels[(texture.width * tex_y) + tex_x];    
+    C2Renderer::draw_pixel(engine_core, x, y, texture.pixels[(texture.width * tex_y) + tex_x]);
 }

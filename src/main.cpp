@@ -228,7 +228,7 @@ std::vector<Triangle> clip_geometry(std::vector<Polygon>& polygons, const Frustu
     Triangle triangles_after_clipping[MAX_NUM_POLY_TRIANGLES];
 
     for (auto& polygon : polygons) {
-        clip_polygon(polygon);
+        clip_polygon(polygon, frustum);
         int num_triangles_after_clipping = 0;
         triangles_from_polygon(polygon, triangles_after_clipping, num_triangles_after_clipping);
         

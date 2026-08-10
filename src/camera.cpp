@@ -22,7 +22,7 @@ void update_camera_and_view(SceneData& scene, FrameData& frame_data) {
     geom::vec3 target = { 0, 0, 1 };
     geom::mat4 camera_yaw_rotation = geom::mat4_make_rotation_y(scene.camera.yaw);
     geom::mat4 camera_pitch_rotation = geom::mat4_make_rotation_x(scene.camera.pitch);
-    scene.camera.direction = (camera_pitch_rotation * camera_yaw_rotation * geom::vec4_from_vec3(target)).xyz();
+    scene.camera.direction = (camera_yaw_rotation * camera_pitch_rotation * geom::vec4_from_vec3(target)).xyz();
     target = scene.camera.position + scene.camera.direction;
 
     scene.view_matrix = look_at(scene.camera.position, target, up);

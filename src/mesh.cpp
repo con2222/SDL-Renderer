@@ -6,8 +6,6 @@
 #include <sstream>
 #include <color.h>
 
-// TODO: Create implementation for mesh.h functions
-
 
 Mesh load_obj_file_data(const char* filename, 
         geom::vec3 translation, 
@@ -57,30 +55,34 @@ Mesh load_obj_file_data(const char* filename,
                 std::istringstream iss(line);
                 std::string str;
 
-                Face face;
-                int i = 0;
-                while (iss >> str && i < 3) {
-                    int v = 0.f, t = 0.f, n = 0.f;
-                    int result = sscanf(str.c_str(), "%d/%d/%d", &v, &t, &n);
+                struct VertexIndex { int v = 0, t = 0, n = 0; };
+                std::vector<VertexIndex> parsed_vertices;
+
+                while (iss >> str) {
+                    VertexIndex vi;
+                    int result = sscanf(str.c_str(), "%d/%d/%d", &vi.v, &vi.t, &vi.n);
                     if (result != 0) {
-                        if (i == 0) {
-                            face.a = v - 1;
-                            face.a_t = t - 1;
-                        } else if (i == 1) {
-                            face.b = v - 1;
-                            face.b_t = t - 1;
-                        } else {
-                            face.c = v - 1;
-                            face.c_t = t - 1;
-                        }
-                        if (face.color == 0) {   
-                            face.color = C2::Color::Silver;
-                        }
+                        parsed_vertices.push_back(vi);
                     }
-                    i++;
                 }
-                
-                mesh.faces.push_back(face);
+
+                if (parsed_vertices.size() >= 3) { 
+                    for (size_t j = 1; j < parsed_vertices.size() - 1; j++) {
+                        Face face;
+                    
+                        face.a = parsed_vertices[0].v - 1;
+                        face.a_t = parsed_vertices[0].t - 1;
+
+                        face.b = parsed_vertices[j].v - 1;
+                        face.b_t = parsed_vertices[j].t - 1;
+
+                        face.c = parsed_vertices[j + 1].v - 1;
+                        face.c_t = parsed_vertices[j + 1].t - 1;
+                        face.color = C2::Color::Silver;
+                        mesh.faces.push_back(face);
+                    }
+
+                }
             }
         }
     }

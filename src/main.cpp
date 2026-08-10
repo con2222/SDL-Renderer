@@ -7,6 +7,7 @@
 #include "texture.h"
 #include "clipping.h"
 #include "scene.h"
+#include "C2Core/c2_profiler.hpp"
 
 #include <cstdint>
 #include <vector>
@@ -280,6 +281,7 @@ void project_geometry(std::vector<Triangle>& clipped_triangles, RenderContext& r
 }
 
 void update(EngineCore& engine_core, SceneData& scene, RenderContext& render_context, FrameData& frame_data) {
+    C2Core::Profiler::ScopedProfiler profiler("Update", C2Core::Profiler::TimeUnit::Nanoseconds);
     render_context.triangles_to_render.clear();
 
     uint64_t time_to_wait = frame_data.frame_target_time - (SDL_GetTicks64() - frame_data.previous_frame_time);
@@ -379,8 +381,11 @@ void setup(EngineCore& engine_core, SceneData& scene, RenderContext& context) {
     context.projection_matrix = geom::mat4_make_perspective(fov_y, aspect_y, znear, zfar);
     context.frustum = create_frustum(fov_x, fov_y, znear, zfar);
 
-    load_entity(scene, "assets/f117.obj", "assets/f117.png", {0.f, 0.f, 5.f});
-    load_entity(scene, "assets/cube.obj", "assets/cube.png", {-3.f, 0.f, 8.f});
+    load_entity(scene, "assets/runway.obj", "assets/runway.png", {0, -1.5, +23}, {0, 0, 0}, {1, 1, 1});
+    load_entity(scene, "./assets/f22.obj", "./assets/f22.png", {0, -1.3, +5}, {0, -M_PI/2, 0}, {1, 1, 1});
+    load_entity(scene, "./assets/efa.obj", "./assets/efa.png", {-2, -1.3, +9},  {0, -M_PI/2, 0}, {1, 1, 1});
+    load_entity(scene, "./assets/f117.obj", "./assets/f117.png",  {+2, -1.3, +9}, {0, -M_PI/2, 0}, {1, 1, 1});
+
     std::cout << "Vertices:" << scene.meshes[0].vertices.size() << " " << "Faces:" << scene.meshes[0].faces.size() << std::endl;
 }
 

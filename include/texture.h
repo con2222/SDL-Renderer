@@ -3,9 +3,7 @@
 
 #include <cstdint>
 
-extern "C" {
-    #include "upng.h"
-}
+namespace C2 {
 
 struct Texture {
     int width = 0;
@@ -14,5 +12,7 @@ struct Texture {
 };
 
 Texture load_png_texture_data(const char* filename); 
+
+} // C2
 
 #endif // TEXTURE_H

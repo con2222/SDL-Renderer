@@ -2,7 +2,7 @@
 #define CONFIGURATIONS_HPP
 
 
-namespace C2Renderer {
+namespace C2 {
 
 enum class CullMethod {
     CULL_NONE,
@@ -18,6 +18,6 @@ enum class RenderMethod {
     RENDER_TEXTURED
 };
 
-}
+} // C2
 
 #endif // CONFIGURATIONS_HPP

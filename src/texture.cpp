@@ -6,6 +6,8 @@ extern "C" {
     #include "upng.h"
 }
 
+namespace C2 {
+
 Texture load_png_texture_data(const char* filename) {
     Texture texture;
     upng_t* png_texture = upng_new_from_file(filename);
@@ -23,3 +25,5 @@ Texture load_png_texture_data(const char* filename) {
     upng_free(png_texture);
     return texture;
 }
+
+} // C2

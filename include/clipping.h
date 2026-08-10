@@ -5,7 +5,10 @@
 
 
 constexpr int MAX_NUM_POLY_VERTICES = 100;
-constexpr int MAX_NUM_POLY_TRIANGLES = 98; // max - 2
+constexpr int MAX_NUM_POLY_TRIANGLES = 98; 
+
+
+namespace C2 {
 
 struct Triangle;
 
@@ -38,5 +41,7 @@ float float_lerp(float a, float b, float t);
 void clip_polygon(Polygon& polygon, Frustum frustum);
 void clip_polygon_againts_plain(Polygon& polygon, const Plane& plane, Frustum frustum);
 void triangles_from_polygon(Polygon& polygon, Triangle triangles[], int& num_triangles);
+
+} // C2
 
 #endif // CLIPPING_H

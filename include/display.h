@@ -5,7 +5,7 @@
 #include <cstdint>
 
 
-namespace C2Renderer {
+namespace C2 {
 
 struct Window {
     SDL_Window* SDL_window = nullptr;
@@ -39,6 +39,9 @@ void draw_pixel(EngineCore& engine_core, int x, int y, uint32_t color);
 void draw_rectangle(EngineCore& engine_core, int x, int y, int width, int height, uint32_t color);
 void draw_dot_grid(EngineCore& engine_core, uint32_t color, int offset);
 void destroy_window(EngineCore& engine_core);
+void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1, uint32_t color);
+void draw_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
+
 
 }; // namespace C2Renderer
 

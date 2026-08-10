@@ -1,9 +1,9 @@
 #include "triangle.h"
 #include "display.h"
 #include "texture.h"
-
 #include <utility>
 
+namespace C2 {
 
 geom::vec3 barycentric_weights(geom::vec2 a, geom::vec2 b, geom::vec2 c, geom::vec2 p) {
 
@@ -25,7 +25,7 @@ geom::vec3 barycentric_weights(geom::vec2 a, geom::vec2 b, geom::vec2 c, geom::v
     return weights;
 }
 
-void draw_filled_triangle(C2Renderer::EngineCore& engine_core, 
+void draw_filled_triangle(EngineCore& engine_core, 
         int x0, int y0, float z0, float w0, 
         int x1, int y1, float z1, float w1, 
         int x2, int y2, float z2, float w2,
@@ -85,7 +85,7 @@ void draw_filled_triangle(C2Renderer::EngineCore& engine_core,
                 interpolated_reciprocal_w = 1 - interpolated_reciprocal_w; 
                 int buffer_index = engine_core.window.window_width * y + x;
                 if (interpolated_reciprocal_w < engine_core.z_buffer[buffer_index]) {
-                    C2Renderer::draw_pixel(engine_core, x, y, color);
+                    draw_pixel(engine_core, x, y, color);
                     engine_core.z_buffer[buffer_index] = interpolated_reciprocal_w;
                 }
             }
@@ -114,7 +114,7 @@ void draw_filled_triangle(C2Renderer::EngineCore& engine_core,
                 interpolated_reciprocal_w = 1 - interpolated_reciprocal_w; 
                 int buffer_index = engine_core.window.window_width * y + x;
                 if (interpolated_reciprocal_w < engine_core.z_buffer[buffer_index]) {
-                    C2Renderer::draw_pixel(engine_core, x, y, color);
+                    draw_pixel(engine_core, x, y, color);
                     engine_core.z_buffer[buffer_index] = interpolated_reciprocal_w;
                 }
             }
@@ -123,7 +123,7 @@ void draw_filled_triangle(C2Renderer::EngineCore& engine_core,
 }
 
 
-void draw_textured_triangle(C2Renderer::EngineCore &engine_core, 
+void draw_textured_triangle(EngineCore &engine_core, 
         int x0, int y0, float z0, float w0, float u0, float v0,
         int x1, int y1, float z1, float w1, float u1, float v1, 
         int x2, int y2, float z2, float w2, float u2, float v2,
@@ -202,7 +202,7 @@ void draw_textured_triangle(C2Renderer::EngineCore &engine_core,
     }
 }
 
-void draw_texel(C2Renderer::EngineCore& engine_core, int x, int y, const Texture& texture, geom::vec4 point_a, geom::vec4 point_b, geom::vec4 point_c, float u0, float v0, float u1, float v1, float u2, float v2) {
+void draw_texel(EngineCore& engine_core, int x, int y, const Texture& texture, geom::vec4 point_a, geom::vec4 point_b, geom::vec4 point_c, float u0, float v0, float u1, float v1, float u2, float v2) {
     
     if (x < 0 || x >= engine_core.window.window_width || y < 0 || y >= engine_core.window.window_height) {
         return;
@@ -243,5 +243,7 @@ void draw_texel(C2Renderer::EngineCore& engine_core, int x, int y, const Texture
     if (tex_y < 0) tex_y += texture.height; 
 
     uint32_t texel_color = texture.pixels[(texture.width * tex_y) + tex_x];    
-    C2Renderer::draw_pixel(engine_core, x, y, texture.pixels[(texture.width * tex_y) + tex_x]);
+    draw_pixel(engine_core, x, y, texture.pixels[(texture.width * tex_y) + tex_x]);
 }
+
+} // C2

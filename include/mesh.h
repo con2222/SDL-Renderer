@@ -3,15 +3,11 @@
 
 #include "triangle.h"
 #include "Geometry.h"
-
 #include <vector>
 
+namespace C2 {
 
-const int N_CUBE_VERTICES = 8;
-const int N_CUBE_FACES = 12;
-
-extern geom::vec3 cube_vertices[N_CUBE_VERTICES];
-extern Face cube_faces[N_CUBE_FACES];
+struct SceneData;
 
 struct Mesh {
     std::vector<geom::vec3> vertices; // dynamic array of vertices
@@ -30,5 +26,9 @@ Mesh load_obj_file_data(const char* filename,
         geom::vec3 rotation = { 0.f, 0.f, 0.f }, 
         geom::vec3 scale = { 1.f, 1.f, 1.f }
 );
+
+void load_entity(SceneData& scene, const char* obj_filename, const char* png_filename, geom::vec3 translation = { 0.f, 0.f, 0.f }, geom::vec3 rotation = {0.f, 0.f, 0.f}, geom::vec3 scale = { 1.f, 1.f, 1.f });
+
+} // C2
 
 #endif

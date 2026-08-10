@@ -31,6 +31,7 @@ set(SOURCES
     src/texture.cpp
     src/camera.cpp
     src/clipping.cpp
+    src/pipeline.cpp
     src/upng.c
 )
 

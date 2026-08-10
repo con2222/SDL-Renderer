@@ -1,8 +1,8 @@
 #include "clipping.h"
-
 #include "Geometry.h"
 #include "triangle.h"
 
+namespace C2 {
 
 Frustum create_frustum(float fov_x, float fov_y, float z_near, float z_far) {
         Frustum f;
@@ -141,3 +141,5 @@ void triangles_from_polygon(Polygon& polygon, Triangle triangles[], int& num_tri
     }
     num_triangles = polygon.num_vertices - 2;
 }
+
+} // C2

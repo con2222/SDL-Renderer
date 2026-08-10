@@ -1,11 +1,11 @@
 #include "mesh.h"
-
-
 #include <string>
 #include <fstream>
 #include <sstream>
-#include <color.h>
+#include "color.h"
+#include "scene.h"
 
+namespace C2 {
 
 Mesh load_obj_file_data(const char* filename, 
         geom::vec3 translation, 
@@ -89,3 +89,16 @@ Mesh load_obj_file_data(const char* filename,
 
     return mesh;
 }
+
+void load_entity(SceneData& scene, const char* obj_filename, const char* png_filename, geom::vec3 translation, geom::vec3 rotation, geom::vec3 scale) {
+    Texture tex = load_png_texture_data(png_filename);
+    int tex_index = scene.textures.size();
+    scene.textures.push_back(tex);
+
+    Mesh mesh = load_obj_file_data(obj_filename, translation, rotation, scale);
+    mesh.texture_index = tex_index;
+    
+    scene.meshes.push_back(mesh);
+}
+
+} // C2

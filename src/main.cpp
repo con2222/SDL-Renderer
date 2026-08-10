@@ -1,5 +1,7 @@
 #include "Geometry.h"
+#include "SDL_events.h"
 #include "SDL_keycode.h"
+#include "SDL_scancode.h"
 #include "mesh.h"
 #include "display.h"
 #include "color.h"
@@ -76,6 +78,8 @@ void draw_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int 
 
 void process_input(bool& is_running, SceneData& scene, RenderContext& render_context, FrameData& frame_data) {
     SDL_Event event;
+    
+    float pitch, yaw;
 
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
@@ -93,6 +97,12 @@ void process_input(bool& is_running, SceneData& scene, RenderContext& render_con
                 if (event.key.keysym.sym == SDLK_c) render_context.cull_method = CullMethod::CULL_BACKFACE;
                 if (event.key.keysym.sym == SDLK_x) render_context.cull_method = CullMethod::CULL_NONE;
                 break;
+            case SDL_MOUSEMOTION:
+                yaw = event.motion.xrel * scene.camera.sensitivity;
+                pitch = event.motion.yrel * scene.camera.sensitivity;
+                scene.camera.yaw += yaw * frame_data.delta_time;
+                scene.camera.pitch += pitch * frame_data.delta_time;
+                break;
             default:
                 break;
         }
@@ -107,6 +117,19 @@ void process_input(bool& is_running, SceneData& scene, RenderContext& render_con
     if (key_state[SDL_SCANCODE_S]) {
         scene.camera.forward_velocity = scene.camera.direction * scene.camera.speed * frame_data.delta_time;
         scene.camera.position = scene.camera.position - scene.camera.forward_velocity;
+    }
+    if (key_state[SDL_SCANCODE_A]) {
+        geom::vec3 up = { 0.f, 1.f, 0.f };
+        geom::vec3 right = geom::normalize(geom::cross(scene.camera.direction, up));
+        geom::vec3 right_velocity = right * scene.camera.speed * frame_data.delta_time;
+        scene.camera.position = scene.camera.position + right_velocity;
+    }
+    if (key_state[SDL_SCANCODE_D]) {
+        geom::vec3 up = { 0.0f, 1.0f, 0.0f };
+        geom::vec3 right = geom::normalize(geom::cross(scene.camera.direction, up));
+        
+        geom::vec3 right_velocity = right * scene.camera.speed * frame_data.delta_time;
+        scene.camera.position = scene.camera.position - right_velocity;
     }
     if (key_state[SDL_SCANCODE_LEFT]) {
         scene.camera.yaw -= 1.5f * frame_data.delta_time;

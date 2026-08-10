@@ -1,11 +1,15 @@
 #include "display.h"
+#include "SDL.h"
+#include "SDL_mouse.h"
+#include "SDL_render.h"
+#include "SDL_stdinc.h"
 #include <iostream>
 
 
 namespace C2Renderer {
 
 bool init_window(EngineCore& engine_core) {
-    if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
         std::cerr << "SDL init error: " << SDL_GetError() << std::endl;
         return false;
     }
@@ -27,13 +31,15 @@ bool init_window(EngineCore& engine_core) {
         return false;
     }
 
-    engine_core.renderer = SDL_CreateRenderer(engine_core.window.SDL_window, -1, 0);
+    engine_core.renderer = SDL_CreateRenderer(engine_core.window.SDL_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!engine_core.renderer) {
         std::cerr << "Error creating SDL renderer\n" << std::endl;
         return false;
     }
 
     SDL_SetWindowFullscreen(engine_core.window.SDL_window, SDL_WINDOW_FULLSCREEN);
+
+    SDL_SetRelativeMouseMode(SDL_TRUE);
 
     return true;
 }

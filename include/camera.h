@@ -14,6 +14,7 @@ struct Camera {
     float pitch = 0.f;
     float speed = 5.f;
     float up_speed = 3.f;
+    float sensitivity = 0.05f;
 };
 
 mat4 look_at(vec3 eye, vec3 target, vec3 up);

@@ -1,7 +1,8 @@
 #include "triangle.h"
 #include "display.h"
 #include "texture.h"
-#include <utility>
+#include <algorithm>
+
 
 namespace C2 {
 
@@ -25,225 +26,132 @@ geom::vec3 barycentric_weights(geom::vec2 a, geom::vec2 b, geom::vec2 c, geom::v
     return weights;
 }
 
+float edge_cross(const geom::vec2& a, const geom::vec2& b, const geom::vec2& p) {
+    geom::vec2 ab = { b.x - a.x, b.y - a.y };
+    geom::vec2 ap = { p.x - a.x, p.y - a.y };
+    return (ab.x * ap.y) - (ab.y * ap.x);
+}
+
 void draw_filled_triangle(EngineCore& engine_core, 
-        int x0, int y0, float z0, float w0, 
-        int x1, int y1, float z1, float w1, 
-        int x2, int y2, float z2, float w2,
+        geom::vec4 p0,
+        geom::vec4 p1,
+        geom::vec4 p2,
         uint32_t color
 ) {
-    if (y0 > y1) {
-        std::swap(y0, y1);
-        std::swap(x0, x1);
-        std::swap(z0, z1);
-        std::swap(w0, w1);
-    }
-    if (y1 > y2) {
-        std::swap(y1, y2);
-        std::swap(x1, x2);
-        std::swap(z1, z2);
-        std::swap(w1, w2);
-    }
-    if (y0 > y1) {
-        std::swap(y0, y1);
-        std::swap(x0, x1);
-            std::swap(z0, z1);
-        std::swap(w0, w1);
-    }
+    int x_min = static_cast<int>(std::floor(std::min({p0.x, p1.x, p2.x})));
+    int y_min = static_cast<int>(std::floor(std::min({p0.y, p1.y, p2.y})));
+    int x_max = static_cast<int>(std::ceil(std::max({p0.x, p1.x, p2.x})));
+    int y_max = static_cast<int>(std::ceil(std::max({p0.y, p1.y, p2.y})));    
 
-    geom::vec2 point_a = geom::vec2(x0, y0);
-    geom::vec2 point_b = geom::vec2(x1, y1);
-    geom::vec2 point_c = geom::vec2(x2, y2);
-
-    float rec_w0 = 1.0f / w0;
-    float rec_w1 = 1.0f / w1;
-    float rec_w2 = 1.0f / w2;
- 
-    float inv_slope1 = 0;
-    float inv_slope2 = 0;
-    if (y1 - y0 != 0) inv_slope1 = (x1 - x0) / static_cast<float>(abs(y1 - y0));
-    if (y2 - y0 != 0) inv_slope2 = (x2 - x0) / static_cast<float>(abs(y2 - y0));
-    
-    if (y1 - y0 != 0) {
-        for (int y = y0; y < y1; y++) {
-            int dy = y - y0;
-
-            int x_start = geom::round_float_to_int(x0 + dy * inv_slope1);
-            int x_end = geom::round_float_to_int(x0 + dy * inv_slope2);
-            if (x_start > x_end) std::swap(x_start, x_end);
-
-            for (int x = x_start; x <= x_end; x++) {
-                if (x < 0 || x >= engine_core.window.window_width || y < 0 || y >= engine_core.window.window_height) {
-                    continue;
-                }
-
-                geom::vec2 point_p = geom::vec2(x, y);
-                geom::vec3 weights = barycentric_weights(point_a, point_b, point_c, point_p);
-                float alpha = weights[0];
-                float beta = weights[1];
-                float gamma = weights[2];
-                float interpolated_reciprocal_w = rec_w0 * alpha + rec_w1 * beta + rec_w2 * gamma;
-                interpolated_reciprocal_w = 1 - interpolated_reciprocal_w; 
-                int buffer_index = engine_core.window.window_width * y + x;
-                if (interpolated_reciprocal_w < engine_core.z_buffer[buffer_index]) {
-                    draw_pixel(engine_core, x, y, color);
-                    engine_core.z_buffer[buffer_index] = interpolated_reciprocal_w;
-                }
-            }
-        }
-    }
-
-    if (y2 - y1 != 0) {
-        if (y2 - y1 != 0) inv_slope1 = (x2 - x1) / static_cast<float>(abs(y2 - y1));
-
-        for (int y = y1; y < y2; y++) {
-            int x_start = geom::round_float_to_int(x1 + (y - y1) * inv_slope1);
-            int x_end = geom::round_float_to_int(x0 + (y - y0) * inv_slope2);
-            
-            if (x_start > x_end) std::swap(x_start, x_end);
-
-            for (int x = x_start; x <= x_end; x++) {
-                if (x < 0 || x >= engine_core.window.window_width || y < 0 || y >= engine_core.window.window_height) {
-                    continue;
-                }
-                geom::vec2 point_p = geom::vec2(x, y);
-                geom::vec3 weights = barycentric_weights(point_a, point_b, point_c, point_p);
-                float alpha = weights[0];
-                float beta = weights[1];
-                float gamma = weights[2];
-                float interpolated_reciprocal_w = rec_w0 * alpha + rec_w1 * beta + rec_w2 * gamma;
-                interpolated_reciprocal_w = 1 - interpolated_reciprocal_w; 
-                int buffer_index = engine_core.window.window_width * y + x;
-                if (interpolated_reciprocal_w < engine_core.z_buffer[buffer_index]) {
-                    draw_pixel(engine_core, x, y, color);
-                    engine_core.z_buffer[buffer_index] = interpolated_reciprocal_w;
-                }
-            }
-        }
-    }
-}
+    x_min = std::max(0, x_min);
+    y_min = std::max(0, y_min);
+    x_max = std::min(engine_core.window.window_width - 1, x_max);
+    y_max = std::min(engine_core.window.window_height - 1, y_max);
 
 
-void draw_textured_triangle(EngineCore &engine_core, 
-        int x0, int y0, float z0, float w0, float u0, float v0,
-        int x1, int y1, float z1, float w1, float u1, float v1, 
-        int x2, int y2, float z2, float w2, float u2, float v2,
-        const Texture& texture) {
-    v0 = 1 - v0;
-    v1 = 1 - v1;
-    v2 = 1 - v2;
+    geom::vec2 v0 = p0.xy();
+    geom::vec2 v1 = p1.xy();
+    geom::vec2 v2 = p2.xy();
 
+    float area = edge_cross(v0, v1, v2);
 
-    if (y0 > y1) {
-        std::swap(y0, y1);
-        std::swap(x0, x1);
-        std::swap(z0, z1);
-        std::swap(w0, w1);
-        std::swap(u0, u1);
-        std::swap(v0, v1);
-    }
-    if (y1 > y2) {
-        std::swap(y1, y2);
-        std::swap(x1, x2);
-        std::swap(z1, z2);
-        std::swap(w1, w2);
-        std::swap(u1, u2);
-        std::swap(v1, v2);
-    }
-    if (y0 > y1) {
-        std::swap(y0, y1);
-        std::swap(x0, x1);
-        std::swap(z0, z1);
-        std::swap(w0, w1);
-        std::swap(u0, u1);
-        std::swap(v0, v1);
-    }
-
-    // create vector points after we sort verices
-    geom::vec4 point_a = geom::vec4(x0, y0, z0, w0);
-    geom::vec4 point_b = geom::vec4(x1, y1, z1, w1);
-    geom::vec4 point_c = geom::vec4(x2, y2, z2, w2);
-    
-
-    // render the upper part of triangle
-    float inv_slope1 = 0;
-    float inv_slope2 = 0;
-    if (y1 - y0 != 0) inv_slope1 = (x1 - x0) / static_cast<float>(abs(y1 - y0));
-    if (y2 - y0 != 0) inv_slope2 = (x2 - x0) / static_cast<float>(abs(y2 - y0));
-
-    if (y1 - y0 != 0) {
-        for (int y = y0; y < y1; y++) {
-            int dy = y - y0;
-
-            int x_start = x0 + dy * inv_slope1;
-            int x_end = x0 + dy * inv_slope2;
-        
-            if (x_start > x_end) std::swap(x_start, x_end);
-
-            for (int x = x_start; x <= x_end; x++) {
-                draw_texel(engine_core, x, y, texture, point_a, point_b, point_c, u0, v0, u1, v1, u2, v2);
-            }
-        }
-    }
-
-    // render the bottom part of triangle
-    if (y2 - y1 != 0) {
-        if (y2 - y1 != 0) inv_slope1 = (x2 - x1) / static_cast<float>(abs(y2 - y1));
-
-        for (int y = y1; y < y2; y++) {
-            int x_start = x1 + (y - y1) * inv_slope1;
-            int x_end = x0 + (y - y0) * inv_slope2;
-            
-            if (x_start > x_end) std::swap(x_start, x_end);
-
-            for (int x = x_start; x <= x_end; x++) {
-                draw_texel(engine_core, x, y, texture, point_a, point_b, point_c, u0, v0, u1, v1, u2, v2);
-            }
-        }
-    }
-}
-
-void draw_texel(EngineCore& engine_core, int x, int y, const Texture& texture, geom::vec4 point_a, geom::vec4 point_b, geom::vec4 point_c, float u0, float v0, float u1, float v1, float u2, float v2) {
-    
-    if (x < 0 || x >= engine_core.window.window_width || y < 0 || y >= engine_core.window.window_height) {
+    if (area <= 0) {
         return;
     }
 
-    geom::vec2 point_p = geom::vec2(x, y);
-    geom::vec2 a = point_a.xy();
-    geom::vec2 b = point_b.xy();
-    geom::vec2 c = point_c.xy();
+    for (int y = y_min; y <= y_max; y++) {
+        for (int x = x_min; x <= x_max; x++) {
+            geom::vec2 p = { x + 0.5f, y + 0.5f };
 
-    geom::vec3 weights = barycentric_weights(a, b, c, point_p);
-    if (weights.x < 0) return;
+            float w0 = edge_cross(v1, v2, p);
+            float w1 = edge_cross(v2, v0, p);
+            float w2 = edge_cross(v0, v1, p);
 
-    float alpha = weights[0];
-    float beta = weights[1];
-    float gamma = weights[2];
+            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+                float alpha = w0 / area;
+                float beta = w1 / area;
+                float gamma = w2 / area;
 
-    float interpolated_reciprocal_w = (1/point_a.w) * alpha + (1/point_b.w) * beta + (1/point_c.w) * gamma;
-    interpolated_reciprocal_w = 1.f - interpolated_reciprocal_w; 
-
-    int buffer_index = engine_core.window.window_width * y + x;
-    if (interpolated_reciprocal_w >= engine_core.z_buffer[buffer_index]) {
-        return; 
+                float interpolated_reciprocal_w = (1.0f / p0.w) * alpha + (1.0f / p1.w) * beta + (1.0f / p2.w) * gamma;
+                interpolated_reciprocal_w = 1.0f - interpolated_reciprocal_w; 
+                
+                int buffer_index = engine_core.window.window_width * y + x;
+                if (interpolated_reciprocal_w < engine_core.z_buffer[buffer_index]) {
+                    draw_pixel(engine_core, x, y, color);
+                    engine_core.z_buffer[buffer_index] = interpolated_reciprocal_w;
+                }
+            }
+        }
     }
+}
 
-    engine_core.z_buffer[buffer_index] = interpolated_reciprocal_w;
 
-    // 4. Считаем текстурные координаты
-    float interpolated_u = (u0 / point_a.w) * alpha + (u1 / point_b.w) * beta + (u2 / point_c.w) * gamma;
-    float interpolated_v = (v0 / point_a.w) * alpha + (v1 / point_b.w) * beta + (v2 / point_c.w) * gamma;
+void draw_textured_triangle(EngineCore& engine_core, 
+        geom::vec4 p0, geom::vec2 uv0,
+        geom::vec4 p1, geom::vec2 uv1,
+        geom::vec4 p2, geom::vec2 uv2,
+        const Texture& texture
+) {
+    int x_min = static_cast<int>(std::floor(std::min({p0.x, p1.x, p2.x})));
+    int y_min = static_cast<int>(std::floor(std::min({p0.y, p1.y, p2.y})));
+    int x_max = static_cast<int>(std::ceil(std::max({p0.x, p1.x, p2.x})));
+    int y_max = static_cast<int>(std::ceil(std::max({p0.y, p1.y, p2.y})));
 
-    interpolated_u /= (1.f - interpolated_reciprocal_w);
-    interpolated_v /= (1.f - interpolated_reciprocal_w);
+    x_min = std::max(0, x_min);
+    y_min = std::max(0, y_min);
+    x_max = std::min(engine_core.window.window_width - 1, x_max);
+    y_max = std::min(engine_core.window.window_height - 1, y_max);
 
-    int tex_x = static_cast<int>(interpolated_u * texture.width) % texture.width;
-    int tex_y = static_cast<int>(interpolated_v * texture.height) % texture.height;
-    if (tex_x < 0) tex_x += texture.width;
-    if (tex_y < 0) tex_y += texture.height; 
+    geom::vec2 v0 = p0.xy();
+    geom::vec2 v1 = p1.xy();
+    geom::vec2 v2 = p2.xy();
 
-    uint32_t texel_color = texture.pixels[(texture.width * tex_y) + tex_x];    
-    draw_pixel(engine_core, x, y, texture.pixels[(texture.width * tex_y) + tex_x]);
+    float area = edge_cross(v0, v1, v2);
+
+    if (area <= 0) {
+        return;
+    } 
+
+    for (int y = y_min; y <= y_max; y++) {
+        for (int x = x_min; x <= x_max; x++) {
+            
+            geom::vec2 p = { x + 0.5f, y + 0.5f };
+            
+            float w0 = edge_cross(v1, v2, p);
+            float w1 = edge_cross(v2, v0, p);
+            float w2 = edge_cross(v0, v1, p);
+
+            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+                float alpha = w0 / area;
+                float beta  = w1 / area;
+                float gamma = w2 / area;
+
+                float interpolated_reciprocal_w = (1.0f / p0.w) * alpha + (1.0f / p1.w) * beta + (1.0f / p2.w) * gamma;
+                float z_depth = 1.0f - interpolated_reciprocal_w; 
+
+                int buffer_index = engine_core.window.window_width * y + x;
+                
+                if (z_depth < engine_core.z_buffer[buffer_index]) {
+                    
+                    float interpolated_u = (uv0.x / p0.w) * alpha + (uv1.x / p1.w) * beta + (uv2.x / p2.w) * gamma;
+                    float interpolated_v = (uv0.y / p0.w) * alpha + (uv1.y / p1.w) * beta + (uv2.y / p2.w) * gamma;
+
+                    interpolated_u /= interpolated_reciprocal_w;
+                    interpolated_v /= interpolated_reciprocal_w;
+
+                    int tex_x = static_cast<int>(interpolated_u * texture.width) % texture.width;
+                    int tex_y = static_cast<int>(interpolated_v * texture.height) % texture.height;
+                    
+                    if (tex_x < 0) tex_x += texture.width;
+                    if (tex_y < 0) tex_y += texture.height;
+
+                    uint32_t texel_color = texture.pixels[(texture.width * tex_y) + tex_x];
+                    draw_pixel(engine_core, x, y, texel_color);
+                    engine_core.z_buffer[buffer_index] = z_depth;
+                }
+            }
+        }
+    }
 }
 
 } // C2

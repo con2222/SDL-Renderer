@@ -82,7 +82,6 @@ void clip_polygon_againts_plain(Polygon& polygon, const Plane& plane, Frustum fr
     while (current_vertex != &polygon.vertices[polygon.num_vertices]) {
         current_dot = geom::dot((*current_vertex - plane_point), plane_normal);
         if (current_dot * previous_dot < 0) {
-            // TODO Calculate interpolation intersection
             float t = previous_dot / (previous_dot - current_dot);
             geom::vec3 intersection_point = *previous_vertex + t * (*current_vertex - *previous_vertex);
             geom::vec2 intersection_texcoord = *previous_texcoord + t * (*current_texcoord - *previous_texcoord);

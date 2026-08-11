@@ -94,7 +94,6 @@ void process_input(bool& is_running, SceneData& scene, RenderContext& render_con
 
 
 void update(EngineCore& engine_core, SceneData& scene, RenderContext& render_context, FrameData& frame_data) {
-    C2Core::Profiler::ScopedProfiler profiler("Update", C2Core::Profiler::TimeUnit::Nanoseconds);
     render_context.triangles_to_render.clear();
 
     uint64_t time_to_wait = frame_data.frame_target_time - (SDL_GetTicks64() - frame_data.previous_frame_time);

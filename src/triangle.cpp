@@ -41,13 +41,12 @@ void draw_filled_triangle(EngineCore& engine_core,
     int x_min = static_cast<int>(std::floor(std::min({p0.x, p1.x, p2.x})));
     int y_min = static_cast<int>(std::floor(std::min({p0.y, p1.y, p2.y})));
     int x_max = static_cast<int>(std::ceil(std::max({p0.x, p1.x, p2.x})));
-    int y_max = static_cast<int>(std::ceil(std::max({p0.y, p1.y, p2.y})));    
+    int y_max = static_cast<int>(std::ceil(std::max({p0.y, p1.y, p2.y})));  
 
     x_min = std::max(0, x_min);
     y_min = std::max(0, y_min);
     x_max = std::min(engine_core.window.window_width - 1, x_max);
     y_max = std::min(engine_core.window.window_height - 1, y_max);
-
 
     geom::vec2 v0 = p0.xy();
     geom::vec2 v1 = p1.xy();
@@ -59,14 +58,26 @@ void draw_filled_triangle(EngineCore& engine_core,
         return;
     }
 
+    float w0_step_x = v1.y - v2.y;
+    float w1_step_x = v2.y - v0.y;
+    float w2_step_x = v0.y - v1.y;
+
+    float w0_step_y = v2.x - v1.x;
+    float w1_step_y = v0.x - v2.x;
+    float w2_step_y = v1.x - v0.x;
+
+    geom::vec2 p_start = { x_min + 0.5f, y_min + 0.5f };
+    float w0_row = edge_cross(v1, v2, p_start);
+    float w1_row = edge_cross(v2, v0, p_start);
+    float w2_row = edge_cross(v0, v1, p_start);
+
     for (int y = y_min; y <= y_max; y++) {
+        float w0 = w0_row;
+        float w1 = w1_row;
+        float w2 = w2_row;
+
         for (int x = x_min; x <= x_max; x++) {
-            geom::vec2 p = { x + 0.5f, y + 0.5f };
-
-            float w0 = edge_cross(v1, v2, p);
-            float w1 = edge_cross(v2, v0, p);
-            float w2 = edge_cross(v0, v1, p);
-
+            
             if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
                 float alpha = w0 / area;
                 float beta = w1 / area;
@@ -81,10 +92,17 @@ void draw_filled_triangle(EngineCore& engine_core,
                     engine_core.z_buffer[buffer_index] = interpolated_reciprocal_w;
                 }
             }
+
+            w0 += w0_step_x;
+            w1 += w1_step_x;
+            w2 += w2_step_x;
         }
+
+        w0_row += w0_step_y;
+        w1_row += w1_step_y;
+        w2_row += w2_step_y;
     }
 }
-
 
 void draw_textured_triangle(EngineCore& engine_core, 
         geom::vec4 p0, geom::vec2 uv0,
@@ -92,6 +110,10 @@ void draw_textured_triangle(EngineCore& engine_core,
         geom::vec4 p2, geom::vec2 uv2,
         const Texture& texture
 ) {
+    uv0.y = 1.0f - uv0.y;
+    uv1.y = 1.0f - uv1.y;
+    uv2.y = 1.0f - uv2.y;
+
     int x_min = static_cast<int>(std::floor(std::min({p0.x, p1.x, p2.x})));
     int y_min = static_cast<int>(std::floor(std::min({p0.y, p1.y, p2.y})));
     int x_max = static_cast<int>(std::ceil(std::max({p0.x, p1.x, p2.x})));
@@ -110,17 +132,29 @@ void draw_textured_triangle(EngineCore& engine_core,
 
     if (area <= 0) {
         return;
-    } 
+    }
+
+    float w0_step_x = v1.y - v2.y;
+    float w1_step_x = v2.y - v0.y;
+    float w2_step_x = v0.y - v1.y;
+
+    float w0_step_y = v2.x - v1.x;
+    float w1_step_y = v0.x - v2.x;
+    float w2_step_y = v1.x - v0.x;
+
+    geom::vec2 p_start = { x_min + 0.5f, y_min + 0.5f };
+    float w0_row = edge_cross(v1, v2, p_start);
+    float w1_row = edge_cross(v2, v0, p_start);
+    float w2_row = edge_cross(v0, v1, p_start);
 
     for (int y = y_min; y <= y_max; y++) {
+        
+        float w0 = w0_row;
+        float w1 = w1_row;
+        float w2 = w2_row;
+
         for (int x = x_min; x <= x_max; x++) {
             
-            geom::vec2 p = { x + 0.5f, y + 0.5f };
-            
-            float w0 = edge_cross(v1, v2, p);
-            float w1 = edge_cross(v2, v0, p);
-            float w2 = edge_cross(v0, v1, p);
-
             if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
                 float alpha = w0 / area;
                 float beta  = w1 / area;
@@ -150,7 +184,15 @@ void draw_textured_triangle(EngineCore& engine_core,
                     engine_core.z_buffer[buffer_index] = z_depth;
                 }
             }
+            
+            w0 += w0_step_x;
+            w1 += w1_step_x;
+            w2 += w2_step_x;
         }
+        
+        w0_row += w0_step_y;
+        w1_row += w1_step_y;
+        w2_row += w2_step_y;
     }
 }
 

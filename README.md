@@ -2,6 +2,10 @@
 
 A custom 3D software rasterizer built from scratch in C++. This project renders 3D meshes without relying on any hardware acceleration or modern graphics APIs (like OpenGL or Vulkan), drawing everything pixel by pixel using the CPU.
 
+## Demo
+
+https://github.com/user-attachments/assets/00c89618-8bd2-4a13-9157-942782053ef5
+
 ### Features
 
 * **Custom Math Library:** Built-in vector and matrix math implementations (`vec2`, `vec3`, `mat4`).

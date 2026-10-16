@@ -227,13 +227,22 @@ void setup(EngineCore& engine_core, SceneData& scene, RenderContext& context) {
         geom::mat4_make_perspective(fov_y, aspect_y, znear, zfar);
     context.frustum = create_frustum(fov_x, fov_y, znear, zfar);
 
-    load_entity(scene, "assets/runway.obj", "assets/runway.png", {0, -1.5, +23},
+    /*
+    load_entity(scene, "assets/runway.obj", "assets/runway.png", {0, 0, 0},
                 {0, 0, 0}, {1, 1, 1});
+                */
+    /*
     load_entity(scene, "./assets/f22.obj", "./assets/f22.png", {0, -1.3, +5},
                 {0, -M_PI / 2, 0}, {1, 1, 1});
+                */
+    /*
     load_entity(scene, "./assets/efa.obj", "./assets/efa.png", {-2, -1.3, +9},
+                {0, -M_PI / 2, 0}, {1, 1, 1});A
                 {0, -M_PI / 2, 0}, {1, 1, 1});
-    load_entity(scene, "./assets/f117.obj", "./assets/f117.png", {+2, -1.3, +9},
+                */
+
+    load_entity(scene, "./assets/House.obj", "./assets/House.png");
+    load_entity(scene, "./assets/Shop.obj", "./assets/Shop.png", {+2, 0, +9},
                 {0, -M_PI / 2, 0}, {1, 1, 1});
 
     std::cout << "Vertices:" << scene.meshes[0].vertices.size() << " "

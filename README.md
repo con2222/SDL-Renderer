@@ -4,7 +4,7 @@ A custom 3D software rasterizer built from scratch in C++. This project renders 
 
 ## Demo
 
-https://github.com/user-attachments/assets/00c89618-8bd2-4a13-9157-942782053ef5
+https://github.com/user-attachments/assets/e4f691ae-89e9-491b-b948-f2c681ed4b6f
 
 ### Features
 

@@ -1,50 +1,51 @@
 #include "clipping.h"
+
 #include "Geometry.h"
 #include "triangle.h"
 
 namespace C2 {
 
 Frustum create_frustum(float fov_x, float fov_y, float z_near, float z_far) {
-        Frustum f;
-        
-        float cos_half_fov_x = std::cos(fov_x / 2.0f);
-        float sin_half_fov_x = std::sin(fov_x / 2.0f);
+    Frustum f;
 
-        float cos_half_fov_y = std::cos(fov_y / 2.0f);
-        float sin_half_fov_y = std::sin(fov_y / 2.0f);
+    float cos_half_fov_x = std::cos(fov_x / 2.0f);
+    float sin_half_fov_x = std::sin(fov_x / 2.0f);
 
-        // Left plane
-        f.left.point = {0.0f, 0.0f, 0.0f};
-        f.left.normal = {cos_half_fov_x, 0.0f, sin_half_fov_x};
+    float cos_half_fov_y = std::cos(fov_y / 2.0f);
+    float sin_half_fov_y = std::sin(fov_y / 2.0f);
 
-        // Right plane
-        f.right.point = {0.0f, 0.0f, 0.0f};
-        f.right.normal = {-cos_half_fov_x, 0.0f, sin_half_fov_x};
+    // Left plane
+    f.left.point = {0.0f, 0.0f, 0.0f};
+    f.left.normal = {cos_half_fov_x, 0.0f, sin_half_fov_x};
 
-        // Top plane
-        f.top.point = {0.0f, 0.0f, 0.0f};
-        f.top.normal = {0.0f, -cos_half_fov_y, sin_half_fov_y};
+    // Right plane
+    f.right.point = {0.0f, 0.0f, 0.0f};
+    f.right.normal = {-cos_half_fov_x, 0.0f, sin_half_fov_x};
 
-        // Bot plane
-        f.bottom.point = {0.0f, 0.0f, 0.0f};
-        f.bottom.normal = {0.0f, cos_half_fov_y, sin_half_fov_y};
+    // Top plane
+    f.top.point = {0.0f, 0.0f, 0.0f};
+    f.top.normal = {0.0f, -cos_half_fov_y, sin_half_fov_y};
 
-        // Near plane
-        f.near.point = {0.0f, 0.0f, z_near};
-        f.near.normal = {0.0f, 0.0f, 1.0f};
+    // Bot plane
+    f.bottom.point = {0.0f, 0.0f, 0.0f};
+    f.bottom.normal = {0.0f, cos_half_fov_y, sin_half_fov_y};
 
-        // Far plane
-        f.far.point = {0.0f, 0.0f, z_far};
-        f.far.normal = {0.0f, 0.0f, -1.0f};
+    // Near plane
+    f.near_plane.point = {0.0f, 0.0f, z_near};
+    f.near_plane.normal = {0.0f, 0.0f, 1.0f};
 
-        return f;
+    // Far plane
+    f.far_plane.point = {0.0f, 0.0f, z_far};
+    f.far_plane.normal = {0.0f, 0.0f, -1.0f};
+
+    return f;
 }
 
-float float_lerp(float a, float b, float t) {
-    return a + t * (b - a);
-}
+float float_lerp(float a, float b, float t) { return a + t * (b - a); }
 
-Polygon create_polygon_from_triangle(geom::vec3 v0, geom::vec3 v1, geom::vec3 v2, geom::vec2 t0, geom::vec2 t1, geom::vec2 t2) {
+Polygon create_polygon_from_triangle(geom::vec3 v0, geom::vec3 v1,
+                                     geom::vec3 v2, geom::vec2 t0,
+                                     geom::vec2 t1, geom::vec2 t2) {
     Polygon polygon;
     polygon.vertices[0] = v0;
     polygon.vertices[1] = v1;
@@ -56,14 +57,15 @@ Polygon create_polygon_from_triangle(geom::vec3 v0, geom::vec3 v1, geom::vec3 v2
     return polygon;
 }
 
-void clip_polygon_againts_plain(Polygon& polygon, const Plane& plane, Frustum frustum) {
+void clip_polygon_againts_plain(Polygon& polygon, const Plane& plane,
+                                Frustum frustum) {
     if (polygon.num_vertices == 0) {
         return;
     }
 
     geom::vec3 plane_point = plane.point;
     geom::vec3 plane_normal = plane.normal;
-    
+
     // Part of the final polygon
     geom::vec3 inside_vertices[MAX_NUM_POLY_VERTICES];
     geom::vec2 inside_texcoords[MAX_NUM_POLY_VERTICES];
@@ -73,18 +75,22 @@ void clip_polygon_againts_plain(Polygon& polygon, const Plane& plane, Frustum fr
     geom::vec2* current_texcoord = &polygon.texcoords[0];
 
     geom::vec3* previous_vertex = &polygon.vertices[polygon.num_vertices - 1];
-    geom::vec2* previous_texcoord = &polygon.texcoords[polygon.num_vertices - 1];
-
+    geom::vec2* previous_texcoord =
+        &polygon.texcoords[polygon.num_vertices - 1];
 
     float current_dot = 0;
-    float previous_dot = geom::dot((*previous_vertex - plane_point), plane_normal);
+    float previous_dot =
+        geom::dot((*previous_vertex - plane_point), plane_normal);
 
     while (current_vertex != &polygon.vertices[polygon.num_vertices]) {
         current_dot = geom::dot((*current_vertex - plane_point), plane_normal);
         if (current_dot * previous_dot < 0) {
             float t = previous_dot / (previous_dot - current_dot);
-            geom::vec3 intersection_point = *previous_vertex + t * (*current_vertex - *previous_vertex);
-            geom::vec2 intersection_texcoord = *previous_texcoord + t * (*current_texcoord - *previous_texcoord);
+            geom::vec3 intersection_point =
+                *previous_vertex + t * (*current_vertex - *previous_vertex);
+            geom::vec2 intersection_texcoord =
+                *previous_texcoord +
+                t * (*current_texcoord - *previous_texcoord);
 
             inside_vertices[num_inside_vertices] = intersection_point;
             inside_texcoords[num_inside_vertices] = intersection_texcoord;
@@ -97,7 +103,7 @@ void clip_polygon_againts_plain(Polygon& polygon, const Plane& plane, Frustum fr
         }
         previous_dot = current_dot;
         previous_vertex = current_vertex;
-        previous_texcoord =  current_texcoord;
+        previous_texcoord = current_texcoord;
         current_vertex++;
         current_texcoord++;
     }
@@ -113,12 +119,13 @@ void clip_polygon(Polygon& polygon, Frustum frustum) {
     clip_polygon_againts_plain(polygon, frustum.left, frustum);
     clip_polygon_againts_plain(polygon, frustum.right, frustum);
     clip_polygon_againts_plain(polygon, frustum.top, frustum);
-    clip_polygon_againts_plain(polygon, frustum.bottom, frustum); 
-    clip_polygon_againts_plain(polygon, frustum.near, frustum);
-    clip_polygon_againts_plain(polygon, frustum.far, frustum);
+    clip_polygon_againts_plain(polygon, frustum.bottom, frustum);
+    clip_polygon_againts_plain(polygon, frustum.near_plane, frustum);
+    clip_polygon_againts_plain(polygon, frustum.far_plane, frustum);
 }
 
-void triangles_from_polygon(Polygon& polygon, Triangle triangles[], int& num_triangles) {
+void triangles_from_polygon(Polygon& polygon, Triangle triangles[],
+                            int& num_triangles) {
     if (polygon.num_vertices < 3) {
         num_triangles = 0;
         return;
@@ -132,13 +139,16 @@ void triangles_from_polygon(Polygon& polygon, Triangle triangles[], int& num_tri
         triangles[i].points[0] = geom::vec4_from_vec3(polygon.vertices[index0]);
         triangles[i].points[1] = geom::vec4_from_vec3(polygon.vertices[index1]);
         triangles[i].points[2] = geom::vec4_from_vec3(polygon.vertices[index2]);
-        
+
         // From geom::vec2 to Texel
-        triangles[i].texcoords[0] = { (float)polygon.texcoords[index0].x, (float)polygon.texcoords[index0].y };
-        triangles[i].texcoords[1] = { (float)polygon.texcoords[index1].x, (float)polygon.texcoords[index1].y };
-        triangles[i].texcoords[2] = { (float)polygon.texcoords[index2].x, (float)polygon.texcoords[index2].y };
+        triangles[i].texcoords[0] = {(float)polygon.texcoords[index0].x,
+                                     (float)polygon.texcoords[index0].y};
+        triangles[i].texcoords[1] = {(float)polygon.texcoords[index1].x,
+                                     (float)polygon.texcoords[index1].y};
+        triangles[i].texcoords[2] = {(float)polygon.texcoords[index2].x,
+                                     (float)polygon.texcoords[index2].y};
     }
     num_triangles = polygon.num_vertices - 2;
 }
 
-} // C2
+}  // namespace C2

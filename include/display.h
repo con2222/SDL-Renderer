@@ -2,8 +2,8 @@
 #define DISPLAY_H
 
 #include <SDL2/SDL.h>
-#include <cstdint>
 
+#include <cstdint>
 
 namespace C2 {
 
@@ -29,20 +29,22 @@ struct FrameData {
     const double frame_target_time = 1000.0 / FPS;
 };
 
-
 bool init_window(EngineCore& engineCore);
 void render_color_buffer(EngineCore& engine_core);
 void clear_color_buffer(EngineCore& engine_core, uint32_t color);
 void clear_z_buffer(EngineCore& engine_core);
-void draw_grid(EngineCore& engine_core, uint32_t color, int height, int width, int offset);
+void draw_grid(EngineCore& engine_core, uint32_t color, int height, int width,
+               int offset);
 void draw_pixel(EngineCore& engine_core, int x, int y, uint32_t color);
-void draw_rectangle(EngineCore& engine_core, int x, int y, int width, int height, uint32_t color);
+void draw_rectangle(EngineCore& engine_core, int x, int y, int width,
+                    int height, uint32_t color);
 void draw_dot_grid(EngineCore& engine_core, uint32_t color, int offset);
 void destroy_window(EngineCore& engine_core);
-void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1, uint32_t color);
-void draw_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
+void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1,
+                   uint32_t color);
+void draw_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1,
+                   int x2, int y2, uint32_t color);
 
-
-}; // namespace C2Renderer
+};  // namespace C2
 
 #endif

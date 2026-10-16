@@ -27,22 +27,18 @@ struct Triangle {
     int texture_index = -1;
 };
 
-geom::vec3 barycentric_weights(geom::vec2 a, geom::vec2 b, geom::vec2 c, geom::vec2 p);
+geom::vec3 barycentric_weights(geom::vec2 a, geom::vec2 b, geom::vec2 c,
+                               geom::vec2 p);
 float edge_cross(const geom::vec2& a, const geom::vec2& b, const geom::vec2& p);
 
-void draw_filled_triangle(EngineCore& engine_core, 
-        geom::vec4 p0, geom::vec4 p1, geom::vec4 p2,
-        uint32_t color
-);
+void draw_filled_triangle(EngineCore& engine_core, geom::vec4 p0, geom::vec4 p1,
+                          geom::vec4 p2, uint32_t color);
 
+void draw_textured_triangle(EngineCore& engine_core, geom::vec4 p0,
+                            geom::vec2 uv0, geom::vec4 p1, geom::vec2 uv1,
+                            geom::vec4 p2, geom::vec2 uv2,
+                            const Texture& texture);
 
-void draw_textured_triangle(EngineCore& engine_core, 
-        geom::vec4 p0, geom::vec2 uv0,
-        geom::vec4 p1, geom::vec2 uv1,
-        geom::vec4 p2, geom::vec2 uv2,
-        const Texture& texture
-);
-
-} // C2
+}  // namespace C2
 
 #endif

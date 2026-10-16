@@ -1,13 +1,9 @@
 #ifndef CONFIGURATIONS_HPP
 #define CONFIGURATIONS_HPP
 
-
 namespace C2 {
 
-enum class CullMethod {
-    CULL_NONE,
-    CULL_BACKFACE
-};
+enum class CullMethod { CULL_NONE, CULL_BACKFACE };
 
 enum class RenderMethod {
     RENDER_WIRE,
@@ -18,6 +14,6 @@ enum class RenderMethod {
     RENDER_TEXTURED
 };
 
-} // C2
+}  // namespace C2
 
-#endif // CONFIGURATIONS_HPP
+#endif  // CONFIGURATIONS_HPP

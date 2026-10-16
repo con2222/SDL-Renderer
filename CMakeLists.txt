@@ -22,6 +22,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(SDL2)
 
 add_subdirectory(vendor/c2-core-lib)
+add_subdirectory(vendor/upng)
 
 set(SOURCES 
     src/main.cpp
@@ -32,11 +33,10 @@ set(SOURCES
     src/camera.cpp
     src/clipping.cpp
     src/pipeline.cpp
-    src/upng.c
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE include/)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2-static SDL2::SDL2main C2Core)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2-static SDL2::SDL2main C2Core upng)

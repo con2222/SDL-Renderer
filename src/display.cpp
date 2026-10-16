@@ -1,11 +1,12 @@
 #include "display.h"
+
+#include <iostream>
+
+#include "Geometry.h"
 #include "SDL.h"
 #include "SDL_mouse.h"
 #include "SDL_render.h"
 #include "SDL_stdinc.h"
-#include "Geometry.h"
-#include <iostream>
-
 
 namespace C2 {
 
@@ -17,14 +18,15 @@ bool init_window(EngineCore& engine_core) {
 
     SDL_DisplayMode display_mode;
     SDL_GetCurrentDisplayMode(0, &display_mode);
-    
+
     int fullscreen_width = display_mode.w;
     int fullscreen_height = display_mode.h;
 
     engine_core.window.window_width = fullscreen_width / 3;
     engine_core.window.window_height = fullscreen_height / 3;
 
-    engine_core.window.SDL_window = SDL_CreateWindow(nullptr, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
+    engine_core.window.SDL_window = SDL_CreateWindow(
+        nullptr, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         fullscreen_width, fullscreen_height, SDL_WINDOW_BORDERLESS);
 
     if (!engine_core.window.SDL_window) {
@@ -32,13 +34,16 @@ bool init_window(EngineCore& engine_core) {
         return false;
     }
 
-    engine_core.renderer = SDL_CreateRenderer(engine_core.window.SDL_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    engine_core.renderer = SDL_CreateRenderer(
+        engine_core.window.SDL_window, -1,
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!engine_core.renderer) {
         std::cerr << "Error creating SDL renderer\n" << std::endl;
         return false;
     }
 
-    SDL_SetWindowFullscreen(engine_core.window.SDL_window, SDL_WINDOW_FULLSCREEN);
+    SDL_SetWindowFullscreen(engine_core.window.SDL_window,
+                            SDL_WINDOW_FULLSCREEN);
 
     SDL_SetRelativeMouseMode(SDL_TRUE);
 
@@ -46,39 +51,52 @@ bool init_window(EngineCore& engine_core) {
 }
 
 void render_color_buffer(EngineCore& engine_core) {
-    SDL_UpdateTexture(engine_core.color_buffer_texture, nullptr, engine_core.color_buffer, engine_core.window.window_width * sizeof(uint32_t));
+    SDL_UpdateTexture(engine_core.color_buffer_texture, nullptr,
+                      engine_core.color_buffer,
+                      engine_core.window.window_width * sizeof(uint32_t));
 
-    SDL_RenderCopy(engine_core.renderer, engine_core.color_buffer_texture, nullptr, nullptr);
+    SDL_RenderCopy(engine_core.renderer, engine_core.color_buffer_texture,
+                   nullptr, nullptr);
 }
 
 void clear_color_buffer(EngineCore& engine_core, uint32_t color) {
-    for (int i = 0; i < engine_core.window.window_width * engine_core.window.window_height; i++) {
+    for (int i = 0;
+         i < engine_core.window.window_width * engine_core.window.window_height;
+         i++) {
         engine_core.color_buffer[i] = color;
     }
 }
 
 void clear_z_buffer(EngineCore& engine_core) {
-    for (int i = 0; i < engine_core.window.window_width * engine_core.window.window_height; i++) {
+    for (int i = 0;
+         i < engine_core.window.window_width * engine_core.window.window_height;
+         i++) {
         engine_core.z_buffer[i] = 1.f;
     }
 }
 
-void draw_grid(EngineCore& engine_core, uint32_t color, int height, int width, int offset) {
+void draw_grid(EngineCore& engine_core, uint32_t color, int height, int width,
+               int offset) {
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             if (x % offset == 0 || y % offset == 0) {
-                engine_core.color_buffer[y * engine_core.window.window_width + x] = color;
+                engine_core
+                    .color_buffer[y * engine_core.window.window_width + x] =
+                    color;
             }
         }
     }
 }
 
 void draw_pixel(EngineCore& engine_core, int x, int y, uint32_t color) {
-    if (x < 0 || x >= engine_core.window.window_width || y < 0 || y >= engine_core.window.window_height) return;
+    if (x < 0 || x >= engine_core.window.window_width || y < 0 ||
+        y >= engine_core.window.window_height)
+        return;
     engine_core.color_buffer[engine_core.window.window_width * y + x] = color;
 }
 
-void draw_rectangle(EngineCore& engine_core, int x, int y, int width, int height, uint32_t color) {
+void draw_rectangle(EngineCore& engine_core, int x, int y, int width,
+                    int height, uint32_t color) {
     for (int y0 = y; y0 < y + height; y0++) {
         for (int x0 = x; x0 < x + width; x0++) {
             draw_pixel(engine_core, x0, y0, color);
@@ -89,7 +107,8 @@ void draw_rectangle(EngineCore& engine_core, int x, int y, int width, int height
 void draw_dot_grid(EngineCore& engine_core, uint32_t color, int offset) {
     for (int y = 0; y < engine_core.window.window_height; y += offset) {
         for (int x = 0; x < engine_core.window.window_width; x += offset) {
-            engine_core.color_buffer[y * engine_core.window.window_width + x] = color;
+            engine_core.color_buffer[y * engine_core.window.window_width + x] =
+                color;
         }
     }
 }
@@ -103,11 +122,14 @@ void destroy_window(EngineCore& engine_core) {
 }
 
 // DDA
-void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1, uint32_t color) {
+void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1,
+                   uint32_t color) {
     int delta_x = x1 - x0;
     int delta_y = y1 - y0;
 
-    int side_length = geom::abs(delta_x) > geom::abs(delta_y) ? geom::abs(delta_x) : geom::abs(delta_y);
+    int side_length = geom::abs(delta_x) > geom::abs(delta_y)
+                          ? geom::abs(delta_x)
+                          : geom::abs(delta_y);
 
     float x_inc = delta_x / static_cast<float>(side_length);
     float y_inc = delta_y / static_cast<float>(side_length);
@@ -116,18 +138,18 @@ void draw_line_DDA(EngineCore& engine_core, int x0, int y0, int x1, int y1, uint
     float current_y = y0;
 
     for (int i = 0; i <= side_length; i++) {
-        draw_pixel(engine_core, geom::round_float_to_int(current_x), geom::round_float_to_int(current_y), color);
+        draw_pixel(engine_core, geom::round_float_to_int(current_x),
+                   geom::round_float_to_int(current_y), color);
         current_x += x_inc;
         current_y += y_inc;
     }
 }
 
-void draw_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
+void draw_triangle(EngineCore& engine_core, int x0, int y0, int x1, int y1,
+                   int x2, int y2, uint32_t color) {
     draw_line_DDA(engine_core, x0, y0, x1, y1, color);
     draw_line_DDA(engine_core, x1, y1, x2, y2, color);
     draw_line_DDA(engine_core, x2, y2, x0, y0, color);
-
 }
 
-
-}; // namespace C2
+};  // namespace C2

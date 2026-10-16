@@ -1,12 +1,13 @@
 #ifndef SCENE_H
 #define SCENE_H
 
+#include <vector>
+
 #include "camera.h"
-#include "configurations.h"
 #include "clipping.h"
+#include "configurations.h"
 #include "mesh.h"
 #include "texture.h"
-#include <vector>
 
 namespace C2 {
 
@@ -16,7 +17,7 @@ struct SceneData {
     std::vector<Texture> textures;
     geom::mat4 view_matrix;
 
-    geom::vec3 light_direction = { 0, 0, 1 };
+    geom::vec3 light_direction = {0, 0, 1};
 };
 
 struct RenderContext {
@@ -31,6 +32,6 @@ struct RenderContext {
     float z_far = 100.f;
 };
 
-}; // C2
+};  // namespace C2
 
-#endif // SCENE_H
+#endif  // SCENE_H

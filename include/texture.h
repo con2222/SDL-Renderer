@@ -11,8 +11,8 @@ struct Texture {
     std::uint32_t* pixels = nullptr;
 };
 
-Texture load_png_texture_data(const char* filename); 
+Texture load_png_texture_data(const char* filename);
 
-} // C2
+}  // namespace C2
 
-#endif // TEXTURE_H
+#endif  // TEXTURE_H
